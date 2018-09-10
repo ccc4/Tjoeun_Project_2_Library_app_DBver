@@ -1,10 +1,9 @@
 package dialog.member;
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.Connection;
 
-import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -18,6 +17,9 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+
+import dao.DAO;
+import db.util.GenerateConnection;
 
 public class MemJoinDialog extends JDialog {
 private boolean value = false;
@@ -41,7 +43,7 @@ private boolean value = false;
 	JTextArea addressArea = new JTextArea();
 	JScrollPane addressPane = new JScrollPane(addressArea);
 	
-	JButton joinBtn, exitBtn;
+	JButton joinBtn, exitBtn, checkIdBtn, checkNicknameBtn;
 	
 	
 	
@@ -57,37 +59,41 @@ private boolean value = false;
 //		idLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 		idLabel.setBounds(10, 10, 80, 30);
 		add(idField = new JTextField());
-		idField.setBounds(95, 10, 150, 30);
+		idField.setBounds(95, 10, 100, 30);
+		add(checkIdBtn = new JButton("확인"));
+		checkIdBtn.setBounds(200, 10, 60, 30);
 		
 		add(pwLabel = new JLabel("비밀번호"));
 //		pwLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 		pwLabel.setBounds(10, 40, 80, 30);
 		add(pwField = new JPasswordField());
-		pwField.setBounds(95, 40, 150, 30);
+		pwField.setBounds(95, 40, 165, 30);
 		
 		add(pw2Label = new JLabel("비밀번호확인"));
 //		pw2Label.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 		pw2Label.setBounds(10, 70, 80, 30);
 		add(pw2Field = new JPasswordField());
-		pw2Field.setBounds(95, 70, 150, 30);
+		pw2Field.setBounds(95, 70, 165, 30);
 		
 		add(nicknameLabel = new JLabel("별명"));
 //		nicknameLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 		nicknameLabel.setBounds(10, 100, 80, 30);
 		add(nicknameField = new JTextField());
-		nicknameField.setBounds(95, 100, 150, 30);
+		nicknameField.setBounds(95, 100, 100, 30);
+		add(checkNicknameBtn = new JButton("확인"));
+		checkNicknameBtn.setBounds(200, 100, 60, 30);
 		
 		add(nameLabel = new JLabel("이름"));
 //		nameLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 		nameLabel.setBounds(10, 130, 80, 30);
 		add(nameField = new JTextField());
-		nameField.setBounds(95, 130, 150, 30);
+		nameField.setBounds(95, 130, 100, 30);
 		
 		add(ageLabel = new JLabel("나이"));
 //		ageLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 		ageLabel.setBounds(10, 160, 80, 30);
 		add(ageField = new JTextField());
-		ageField.setBounds(95, 160, 50, 30);
+		ageField.setBounds(95, 160, 100, 30);
 		
 		add(genderLabel = new JLabel("성별"));
 //		genderLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
@@ -99,13 +105,13 @@ private boolean value = false;
 		bg.add(femaleBtn);
 		genderPanel.add(maleBtn);
 		genderPanel.add(femaleBtn);
-		genderPanel.setBounds(95, 190, 130, 30);
+		genderPanel.setBounds(95, 190, 110, 30);
 		
 		add(telLabel = new JLabel("전화번호"));
 //		telLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 		telLabel.setBounds(10, 220, 80, 30);
 		add(telField = new JTextField());
-		telField.setBounds(95, 220, 150, 30);
+		telField.setBounds(95, 220, 165, 30);
 		
 		add(emailLabel = new JLabel("이메일"));
 //		emailLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
@@ -115,29 +121,62 @@ private boolean value = false;
 		add(email_golbeng = new JLabel("@"));
 		email_golbeng.setBounds(200, 250, 20, 30);
 		add(emailField_2 = new JComboBox<>(domeins));
-		emailField_2.setBounds(95, 280, 150, 30);
+		emailField_2.setBounds(95, 280, 165, 30);
 		
 		add(addressLabel = new JLabel("주소"));
 //		addressLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 		addressLabel.setBounds(10, 310, 80, 30);
 		add(addressPane);
-		addressPane.setBounds(95, 310, 150, 50);
+		addressPane.setBounds(95, 310, 165, 50);
 		
 		add(joinBtn = new JButton("가입"));
-		joinBtn.setBounds(120, 370, 60, 30);
+		joinBtn.setBounds(135, 370, 60, 30);
 		add(exitBtn = new JButton("취소"));
-		exitBtn.setBounds(185, 370, 60, 30);
+		exitBtn.setBounds(200, 370, 60, 30);
 		
 		
 		
-		setSize(270, 445);
+		setSize(280, 445);
 		setLocationRelativeTo(null);
-		setResizable(false);
+//		setResizable(false);
 		
 		generateEvents();
 	}
 	
 	private void generateEvents() {
+		
+		checkIdBtn.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Connection conn = GenerateConnection.getConnection();
+				DAO dao = DAO.getInstance();
+				
+				int re = dao.checkIdDuplication(conn, getIdField());
+				if(re == 1) {
+					JOptionPane.showMessageDialog(null, "이미 사용중인 아이디입니다", "회원가입", JOptionPane.WARNING_MESSAGE);
+				} else {
+					JOptionPane.showMessageDialog(null, "사용 가능한 아이디입니다", "회원가입", JOptionPane.INFORMATION_MESSAGE);
+				}
+			}
+		});
+		
+		checkNicknameBtn.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Connection conn = GenerateConnection.getConnection();
+				DAO dao = DAO.getInstance();
+				
+				int re = dao.checkNicknameDuplication(conn, getNicknameField());
+				if(re == 1) {
+					JOptionPane.showMessageDialog(null, "이미 사용중인 별명입니다", "회원가입", JOptionPane.WARNING_MESSAGE);
+				} else {
+					JOptionPane.showMessageDialog(null, "사용 가능한 별명입니다", "회원가입", JOptionPane.INFORMATION_MESSAGE);
+				}
+			}
+		});
+		
 		joinBtn.addActionListener(new ActionListener() {
 
 			@Override

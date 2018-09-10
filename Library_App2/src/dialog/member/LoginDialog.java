@@ -45,36 +45,32 @@ private boolean value = false;
 		this.setSize(195, 150);
 		this.setLocationRelativeTo(null);
 		
-		this.loginBtn.addActionListener(new ActionListener() {
-			
+		generateEvents();
+		
+	}
+	
+	private void generateEvents() {
+		loginBtn.addActionListener(new ActionListener() {
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(idField.getText().trim().length() == 0) {
+				if (idField.getText().trim().length() == 0) {
 					JOptionPane.showMessageDialog(null, "아이디를 입력해주세요", "ERROR", JOptionPane.WARNING_MESSAGE);
 					idField.requestFocus();
 					return;
 				}
-				if(pwField.getText().trim().length() == 0) {
+				if (pwField.getText().trim().length() == 0) {
 					JOptionPane.showMessageDialog(null, "비밀번호를 입력해주세요", "ERROR", JOptionPane.WARNING_MESSAGE);
 					pwField.requestFocus();
 					return;
 				}
-				
+
 				value = true;
 				setVisible(false);
 			}
 		});
-		
-//		this.exitBtn.addActionListener(new ActionListener() {
-//			
-//			@Override
-//			public void actionPerformed(ActionEvent e) {
-//				value = false;
-//				setVisible(false);
-//			}
-//		});
 	}
-	
+
 	public boolean check() {
 		return this.value;
 	}

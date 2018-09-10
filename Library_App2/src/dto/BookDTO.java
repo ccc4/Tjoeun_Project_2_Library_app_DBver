@@ -7,15 +7,15 @@ public class BookDTO {
 	private String title;
 	private String author;
 	private String publisher;
-	private String imageName;
+	private String imgName;
 	private Timestamp addDate;
 	
-	public BookDTO(int idx, String title, String author, String publisher, String imageName, Timestamp addDate) {
+	public BookDTO(int idx, String title, String author, String publisher, String imgName, Timestamp addDate) {
 		this.idx = idx;
 		this.title = title;
 		this.author = author;
 		this.publisher = publisher;
-		this.imageName = imageName;
+		this.imgName = imgName;
 		this.addDate = addDate;
 	}
 	
@@ -58,12 +58,12 @@ public class BookDTO {
 		this.publisher = publisher;
 	}
 
-	public String getImageName() {
-		return imageName;
+	public String getImgName() {
+		return imgName;
 	}
 
-	public void setImageName(String imageName) {
-		this.imageName = imageName;
+	public void setImgName(String imgName) {
+		this.imgName = imgName;
 	}
 
 	public Timestamp getAddDate() {

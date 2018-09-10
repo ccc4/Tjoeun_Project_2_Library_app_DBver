@@ -5,7 +5,10 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.sql.Connection;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
@@ -27,11 +30,15 @@ import dao.DAO;
 import db.util.DB_Closer;
 import db.util.GenerateConnection;
 import dialog.book.BookAddDialog;
+import dialog.book.BookSearchDialog;
+import dialog.book.BookAddDialog;
 import dialog.member.LoginDialog;
 import dialog.member.MemJoinDialog;
 import dialog.member.MemModiDialog;
 import dto.BookDTO;
 import dto.MemberDTO;
+import dto.RtListDTO;
+import dto.RvListDTO;
 
 public class Home extends JFrame {
 	// memTop 로그인
@@ -57,12 +64,12 @@ public class Home extends JFrame {
 		
 		// memBot 예약
 		String[] memRvListColumns = {"책 제목", "예약 날짜"};
-		DefaultTableModel rvListColumns = new DefaultTableModel(memRvListColumns, 0) {
+		DefaultTableModel rvListModel = new DefaultTableModel(memRvListColumns, 0) {
 			public boolean isCellEditable(int row, int column) {
 				return false;
 			}
 		};
-		JTable rvListTable = new JTable(rvListColumns);
+		JTable rvListTable = new JTable(rvListModel);
 		JScrollPane memBotScrollPane = new JScrollPane(rvListTable);
 		
 		JPanel memBotSouthPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -76,6 +83,7 @@ public class Home extends JFrame {
 		JPanel bookBotPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		
 		JButton bookSearchBtn = new JButton("책 검색");
+		JButton bookSearchBtn2 = new JButton("책 검색2");
 		JButton bookRentalBtn = new JButton("대여");
 		JButton bookReserveBtn = new JButton("예약");
 		
@@ -131,8 +139,9 @@ public class Home extends JFrame {
 		// =======================================================================
 		
 		private Home owner = this;
-		private int session_idx = 0;
-		
+		private static int session_idx = 0;
+		private String selectedBookTitle;
+		private int selectedBookIdx;
 		
 		
 		public Home() {
@@ -153,16 +162,18 @@ public class Home extends JFrame {
 			
 			memTopNorthLabel.setHorizontalAlignment(SwingConstants.CENTER);
 			
-//			bookListTable.addMouseListener(l); 클릭 이벤트
+			bookListTable.addMouseListener(new BookListSelectedRow());
 			bookListTable.getColumn("책 제목").setPreferredWidth(300);
 			bookListTable.getColumn("저자").setPreferredWidth(130);
 			bookListTable.getColumn("출판사").setPreferredWidth(130);
 			bookListTable.getTableHeader().setReorderingAllowed(false);
 			bookListTable.getTableHeader().setResizingAllowed(false);
 			
+			rtListTable.addMouseListener(new MRentalListSelectedRow());
 			rtListTable.getTableHeader().setReorderingAllowed(false);
 			rtListTable.getTableHeader().setResizingAllowed(false);
 			
+			rvListTable.addMouseListener(new MReservationListSelectedRow());
 			rvListTable.getTableHeader().setReorderingAllowed(false);
 			rvListTable.getTableHeader().setResizingAllowed(false);
 			
@@ -171,7 +182,7 @@ public class Home extends JFrame {
 			mainPanel.setEnabled(false);
 			
 			logout();
-			menu_Admin.setVisible(false);
+//			menu_Admin.setVisible(false); 테스트할땐 꺼두기
 			generateEvent();
 			
 			
@@ -230,6 +241,7 @@ public class Home extends JFrame {
 			public BookPanelClass() {
 				
 				bookTopPanel.add(bookSearchBtn);
+				bookTopPanel.add(bookSearchBtn2);
 				
 				bookMidPanel.setResizeWeight(.7);
 				bookMidPanel.setDividerLocation(570);
@@ -246,17 +258,104 @@ public class Home extends JFrame {
 				this.add(bookMidPanel, BorderLayout.CENTER);
 				this.add(bookBotPanel, BorderLayout.SOUTH);
 				
-				getBookList();
+				refreshTable();
 			}
 		}
 		
+		class BookListSelectedRow extends MouseAdapter {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				Connection conn = GenerateConnection.getConnection();
+				DAO dao = DAO.getInstance();
+				String bookImgName = "";
+				
+				selectedBookTitle = (String) bookListTable.getModel().getValueAt(bookListTable.getSelectedRow(), 0);
+				selectedBookIdx = dao.getBookIdx_FromTitle(conn, selectedBookTitle);
+				
+				BookDTO dto = dao.getBookInfo(conn, selectedBookIdx);
+				
+				bookImgName = dto.getImgName();
+				if(bookImgName.trim().length() == 0 || bookImgName.equals("")) {
+					bookImagePanel.setNoImage();
+				} else {
+					bookImagePanel.setSavedImage(bookImgName);
+				} 
+				
+				if(getSession_idx() != 0) {
+					int checkReservation = dao.checkBookReservation(conn, selectedBookIdx);
+					int checkReservationMine = dao.checkBookReservationMine(conn, getSession_idx(), selectedBookIdx);
+					int checkRental = dao.checkBookRental(conn, selectedBookIdx);
+					
+					if(checkReservation == 1 & checkRental == 0) { 	// 누군가 예약중 (내가 예약했는지 확인 필요)
+						if(checkReservationMine == 1) { 			// 내가 예약했을 경우
+							bookRentalBtn.setEnabled(true);
+							bookReserveBtn.setEnabled(false);
+						} else {									// 다른사람의 예약
+							bookRentalBtn.setEnabled(false);
+							bookReserveBtn.setEnabled(false);
+						}
+					} else if(checkReservation == 0 & checkRental == 1) { // 대여중
+						bookRentalBtn.setEnabled(false);
+						bookReserveBtn.setEnabled(false);
+					} else if(checkReservation == 0 & checkRental == 0) { // 대여 예약 가능
+						bookRentalBtn.setEnabled(true);
+						bookReserveBtn.setEnabled(true);
+					}
+				}
+				DB_Closer.close(conn);
+			}
+		}
+		
+		class MRentalListSelectedRow extends MouseAdapter {
+			
+			@Override
+			public void mousePressed(MouseEvent e) {
+//				memMidReturnBtn.setEnabled(false);
+				Connection conn = GenerateConnection.getConnection();
+				DAO dao = DAO.getInstance();
+				
+				selectedBookTitle = (String) rtListTable.getModel().getValueAt(rtListTable.getSelectedRow(), 0);
+				selectedBookIdx = dao.getBookIdx_FromTitle(conn, selectedBookTitle);
+				
+				BookDTO dto = dao.getBookInfo(conn, selectedBookIdx);
+				
+				memMidReturnBtn.setEnabled(true);
+				DB_Closer.close(conn);
+			}
+		}
+		
+		class MReservationListSelectedRow extends MouseAdapter {
+			
+			@Override
+			public void mousePressed(MouseEvent e) {
+//				memMidReturnBtn.setEnabled(false);
+				Connection conn = GenerateConnection.getConnection();
+				DAO dao = DAO.getInstance();
+				
+				selectedBookTitle = (String) rvListTable.getModel().getValueAt(rvListTable.getSelectedRow(), 0);
+				selectedBookIdx = dao.getBookIdx_FromTitle(conn, selectedBookTitle);
+				
+				BookDTO dto = dao.getBookInfo(conn, selectedBookIdx);
+				
+				memBotRentalBtn.setEnabled(true);
+				memBotReserveCancelBtn.setEnabled(true);
+				DB_Closer.close(conn);
+			}
+		}
+		
+		public void refreshTable() {
+			getBookList();
+			getMRentalList();
+			getMReservationList();
+		}
+		
 		public void getBookList() {
-			bookListModel.setRowCount(0);
+			bookListModel.setNumRows(0);
 			
 			Connection conn = GenerateConnection.getConnection();
 			DAO dao = DAO.getInstance();
 			
-			ArrayList<BookDTO> books = dao.bookList(conn);
+			ArrayList<BookDTO> books = dao.getBookList(conn);
 			
 			for(int i=0;i<books.size();i++) {
 				
@@ -269,7 +368,7 @@ public class Home extends JFrame {
 				int checkRental = dao.checkBookRental(conn, books.get(i).getIdx());
 				
 				if(checkReservation == 1 & checkRental == 0) {
-					book[3] = "예약중"; 
+					book[3] = "예약중";
 				} else if(checkReservation == 0 & checkRental == 1) {
 					book[3] = "대여중"; 
 				} else if(checkReservation == 0 & checkRental == 0) {
@@ -279,6 +378,51 @@ public class Home extends JFrame {
 				bookListModel.addRow(book);
 			}
 			
+			DB_Closer.close(conn);
+		}
+		
+		public void getMRentalList() {
+			rtListModel.setNumRows(0);
+			
+			Connection conn = GenerateConnection.getConnection();
+			DAO dao = DAO.getInstance();
+			
+			ArrayList<RtListDTO> books = dao.getRentalList(conn, getSession_idx());
+			
+			for(int i=0;i<books.size();i++) {
+				
+				String[] book = new String[2];
+				book[0] = books.get(i).getTitle();
+				
+				SimpleDateFormat dateFormat = new SimpleDateFormat("yy-MM-dd");
+				book[1] = dateFormat.format(books.get(i).getRentalDate());
+				
+				rtListModel.addRow(book);
+			}
+			
+			DB_Closer.close(conn);
+		}
+		
+		public void getMReservationList() {
+			rvListModel.setNumRows(0);
+			
+			Connection conn = GenerateConnection.getConnection();
+			DAO dao = DAO.getInstance();
+			
+			ArrayList<RvListDTO> books = dao.getReservationList(conn, getSession_idx());
+			
+			for(int i=0;i<books.size();i++) {
+				
+				String[] book = new String[2];
+				book[0] = books.get(i).getTitle();
+				
+				SimpleDateFormat dateFormat = new SimpleDateFormat("yy-MM-dd");
+				book[1] = dateFormat.format(books.get(i).getReserveDate());
+				
+				rvListModel.addRow(book);
+			}
+			
+			DB_Closer.close(conn);
 		}
 		
 		class MenubarClass extends JMenuBar {
@@ -384,8 +528,9 @@ public class Home extends JFrame {
 					} else {
 						MemberDTO dto = dao.getSession(conn, id);
 						setSession_idx(dto.getIdx());
-						memTopNorthLabel.setText(dto.getNickname() + " 님 반갑습니다");
+						memTopNorthLabel.setText(dto.getNickname() + " 님 어서오세용");
 						loginSuccess();
+						refreshTable();
 //						JOptionPane.showMessageDialog(null, "로그인 성공!\n" + id + " 님 어서오세요.", "로그인", JOptionPane.INFORMATION_MESSAGE);
 						
 //						안 읽은 메시지 있을 시 팝업
@@ -478,21 +623,242 @@ public class Home extends JFrame {
 				}
 			});
 			
-//			this.admin_Book_Add.addActionListener(new ActionListener() {
-//				
-//				@Override
-//				public void actionPerformed(ActionEvent e) {
-//					BookAddDialog bookAddDialog = new BookAddDialog(owner, "Book Add");
-//					bookAddDialog.setVisible(true);
-//					
-//					String title = bookAddDialog.getTitleField();
-//					String author = bookAddDialog.getAuthorField();
-//					String imagePath = bookAddDialog.getTargetImgFilePath();
-//					
-//					
-//					
-//				}
-//			});
+			this.admin_Book_Add.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					BookAddDialog bookAddDialog = new BookAddDialog(owner, "책 등록");
+					bookAddDialog.setVisible(true);
+					
+					if(!bookAddDialog.check()) return;
+					
+					String title = bookAddDialog.getTitleField();
+					String author = bookAddDialog.getAuthorField();
+					String publisher = bookAddDialog.getPublisherField();
+					String imgName = "";
+					String targetImgFilePath = bookAddDialog.getTargetImgFilePath();
+					
+					
+					if(!targetImgFilePath.trim().equals("")) {
+						imgName = title + targetImgFilePath.substring(targetImgFilePath.length()-4);
+					}
+					
+					Connection conn = GenerateConnection.getConnection();
+					DAO dao = DAO.getInstance();
+					
+					int re = dao.bAdd(conn, title, author, publisher, imgName, targetImgFilePath);
+					
+					if(re == 0) {
+						JOptionPane.showMessageDialog(null, "책 등록 실패", "책 등록", JOptionPane.WARNING_MESSAGE);
+					} else {
+						JOptionPane.showMessageDialog(null, "책 등록 완료", "책 등록", JOptionPane.INFORMATION_MESSAGE);
+					}
+					
+					DB_Closer.close(conn);
+					
+					refreshTable();
+				}
+			});
+			
+			this.bookRentalBtn.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					int check = JOptionPane.showConfirmDialog(null, "이 책을 대여하시겠습니까?", "책 대여", JOptionPane.YES_NO_OPTION);
+					if(check != JOptionPane.YES_OPTION) return;
+					
+					Connection conn = GenerateConnection.getConnection();
+					DAO dao = DAO.getInstance();
+					
+					int checkReserve = dao.checkBookReservationMine(conn, getSession_idx(), selectedBookIdx);
+					if(checkReserve == 1) {
+						dao.bRental_AtReservation(conn, getSession_idx(), selectedBookIdx);
+					}
+					int re = dao.bRental(conn, getSession_idx(), selectedBookIdx);
+					if(re == 0) {
+						JOptionPane.showMessageDialog(null, "책 대여 실패\n계속 반복될 경우 관리자에게 문의하세요.", "책 대여", JOptionPane.WARNING_MESSAGE);
+					} else {
+						JOptionPane.showMessageDialog(null, "책 대여 완료", "책 대여", JOptionPane.INFORMATION_MESSAGE);
+					}
+					
+					DB_Closer.close(conn);
+					
+					bookRentalBtn.setEnabled(false);
+					bookReserveBtn.setEnabled(false);
+					refreshTable();
+					// 회원 대여 예약 목록도 업데이트
+				}
+			});
+			
+			this.bookReserveBtn.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					int check = JOptionPane.showConfirmDialog(null, "이 책을 예약하시겠습니까?", "책 예약", JOptionPane.YES_NO_OPTION);
+					if(check != JOptionPane.YES_OPTION) return;
+					
+					Connection conn = GenerateConnection.getConnection();
+					DAO dao = DAO.getInstance();
+					
+					int re = dao.bReserve(conn, getSession_idx(), selectedBookIdx);
+					if(re == 0) {
+						JOptionPane.showMessageDialog(null, "책 예약 실패\n계속 반복될 경우 관리자에게 문의하세요.", "책 예약", JOptionPane.WARNING_MESSAGE);
+					} else {
+						JOptionPane.showMessageDialog(null, "책 예약 완료", "책 예약", JOptionPane.INFORMATION_MESSAGE);
+					}
+					
+					DB_Closer.close(conn);
+					
+					bookRentalBtn.setEnabled(false);
+					bookReserveBtn.setEnabled(false);
+					refreshTable();
+				}
+			});
+			
+			this.memMidReturnBtn.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					int check = JOptionPane.showConfirmDialog(null, "이 책을 반납하시겠습니까?", "책 반납", JOptionPane.YES_NO_OPTION);
+					if(check != JOptionPane.YES_OPTION) return;
+					
+					Connection conn = GenerateConnection.getConnection();
+					DAO dao = DAO.getInstance();
+					
+					int re = dao.bReturn(conn, getSession_idx(), selectedBookIdx);
+					if(re == 0) {
+						JOptionPane.showMessageDialog(null, "책 반납 실패\n계속 반복될 경우 관리자에게 문의하세요.", "책 반납", JOptionPane.WARNING_MESSAGE);
+					} else {
+						JOptionPane.showMessageDialog(null, "책 반납 완료", "책 반납", JOptionPane.INFORMATION_MESSAGE);
+					}
+					
+					DB_Closer.close(conn);
+					
+					memMidReturnBtn.setEnabled(false);
+					refreshTable();
+				}
+			});
+			
+			this.memBotRentalBtn.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					int check = JOptionPane.showConfirmDialog(null, "이 책을 대여하시겠습니까?", "책 대여", JOptionPane.YES_NO_OPTION);
+					if(check != JOptionPane.YES_OPTION) return;
+					
+					Connection conn = GenerateConnection.getConnection();
+					DAO dao = DAO.getInstance();
+					
+					int checkReserve = dao.checkBookReservationMine(conn, getSession_idx(), selectedBookIdx);
+					if(checkReserve == 1) {
+						dao.bRental_AtReservation(conn, getSession_idx(), selectedBookIdx);
+					}
+					int re = dao.bRental(conn, getSession_idx(), selectedBookIdx);
+					if(re == 0) {
+						JOptionPane.showMessageDialog(null, "책 대여 실패\n계속 반복될 경우 관리자에게 문의하세요.", "책 대여", JOptionPane.WARNING_MESSAGE);
+					} else {
+						JOptionPane.showMessageDialog(null, "책 대여 완료", "책 대여", JOptionPane.INFORMATION_MESSAGE);
+					}
+					
+					DB_Closer.close(conn);
+					
+					memBotRentalBtn.setEnabled(false);
+					memBotReserveCancelBtn.setEnabled(false);
+					refreshTable();
+				}
+			});
+			
+			this.memBotReserveCancelBtn.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					int check = JOptionPane.showConfirmDialog(null, "이 책의 예약을 취소하시겠습니까?", "책 예약취소", JOptionPane.YES_NO_OPTION);
+					if(check != JOptionPane.YES_OPTION) return;
+					
+					Connection conn = GenerateConnection.getConnection();
+					DAO dao = DAO.getInstance();
+					
+					int re = dao.bReservationCancel(conn, getSession_idx(), selectedBookIdx);
+					if(re == 0) {
+						JOptionPane.showMessageDialog(null, "책 예약취소 실패\n계속 반복될 경우 관리자에게 문의하세요.", "책 예약취소", JOptionPane.WARNING_MESSAGE);
+					} else {
+						JOptionPane.showMessageDialog(null, "책 예약취소 완료", "책 예약취소", JOptionPane.INFORMATION_MESSAGE);
+					}
+					
+					DB_Closer.close(conn);
+					
+					memBotRentalBtn.setEnabled(false);
+					memBotReserveCancelBtn.setEnabled(false);
+					refreshTable();
+				}
+			});
+			
+			this.bookSearchBtn.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					BookSearchDialog bookSearchDialog = new BookSearchDialog(owner, "책 검색");
+					bookSearchDialog.setVisible(true);
+					
+					String title;
+					if(bookSearchDialog.check() == 0) {
+						return;
+					} else if(bookSearchDialog.check() == 1) { // 대여
+						int check = JOptionPane.showConfirmDialog(null, "이 책을 대여하시겠습니까?", "책 대여", JOptionPane.YES_NO_OPTION);
+						if(check != JOptionPane.YES_OPTION) return;
+						
+						Connection conn = GenerateConnection.getConnection();
+						DAO dao = DAO.getInstance();
+
+						title = bookSearchDialog.getTitleField().getText().trim();
+						int b_idx = dao.getBookIdx_FromTitle(conn, title);
+						
+						int checkReserve = dao.checkBookReservationMine(conn, getSession_idx(), b_idx);
+						if(checkReserve == 1) {
+							dao.bRental_AtReservation(conn, getSession_idx(), b_idx);
+						}
+						int re = dao.bRental(conn, getSession_idx(), b_idx);
+						if(re == 0) {
+							JOptionPane.showMessageDialog(null, "책 대여 실패\n계속 반복될 경우 관리자에게 문의하세요.", "책 대여", JOptionPane.WARNING_MESSAGE);
+						} else {
+							JOptionPane.showMessageDialog(null, "책 대여 완료", "책 대여", JOptionPane.INFORMATION_MESSAGE);
+						}
+						
+						DB_Closer.close(conn);
+						
+						refreshTable();
+						
+					} else if(bookSearchDialog.check() == 2) { // 예약
+						int check = JOptionPane.showConfirmDialog(null, "이 책을 예약하시겠습니까?", "책 예약", JOptionPane.YES_NO_OPTION);
+						if(check != JOptionPane.YES_OPTION) return;
+						
+						Connection conn = GenerateConnection.getConnection();
+						DAO dao = DAO.getInstance();
+						
+						title = bookSearchDialog.getTitleField().getText().trim();
+						int b_idx = dao.getBookIdx_FromTitle(conn, title);
+						
+						int re = dao.bReserve(conn, getSession_idx(), b_idx);
+						if(re == 0) {
+							JOptionPane.showMessageDialog(null, "책 예약 실패\n계속 반복될 경우 관리자에게 문의하세요.", "책 예약", JOptionPane.WARNING_MESSAGE);
+						} else {
+							JOptionPane.showMessageDialog(null, "책 예약 완료", "책 예약", JOptionPane.INFORMATION_MESSAGE);
+						}
+						
+						DB_Closer.close(conn);
+						
+						refreshTable();
+					}
+				}
+			});
+			
+			this.bookSearchBtn2.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					JOptionPane.showMessageDialog(null, "개발중입니다.", "책 검색 버전 2", JOptionPane.INFORMATION_MESSAGE);
+				}
+			});
 		}
 		
 		
@@ -507,6 +873,7 @@ public class Home extends JFrame {
 //			this.memBotReserveCancelBtn.setEnabled(true);
 			
 			this.bookSearchBtn.setEnabled(true);
+			this.bookSearchBtn2.setEnabled(true);
 //			this.bookRentalBtn.setEnabled(true);
 //			this.bookReserveBtn.setEnabled(true);
 			
@@ -526,10 +893,13 @@ public class Home extends JFrame {
 			this.memBotReserveCancelBtn.setEnabled(false);
 			
 			this.bookSearchBtn.setEnabled(false);
+			this.bookSearchBtn2.setEnabled(false);
 			this.bookRentalBtn.setEnabled(false);
 			this.bookReserveBtn.setEnabled(false);
 			
 			this.menu_Member.setVisible(false);
+			
+			refreshTable();
 		}
 		
 		

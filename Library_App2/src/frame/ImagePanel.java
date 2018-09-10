@@ -7,9 +7,9 @@ import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
 public class ImagePanel extends JPanel {
-	private final String DEFAULT_BOOK_IMAGE = ".\\init\\default.jpg";
-	private final String NOT_EXIST_BOOK_IMAGE = ".\\init\\not_Exist.jpg";
-	private final String SAVE_IMAGES_DIR = ".\\docs\\Book_Images\\";
+	private final String DEFAULT_BOOK_IMAGE = ".\\default.jpg";
+	private final String NOT_EXIST_BOOK_IMAGE = ".\\not_Exist.jpg";
+	private final String SAVE_IMAGES_DIR = ".\\BookImages\\";
 	
 	ImageIcon imageicon;
 	Image image;

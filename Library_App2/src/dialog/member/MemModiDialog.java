@@ -46,7 +46,7 @@ public class MemModiDialog extends JDialog {
 	JTextArea addressArea = new JTextArea();
 	JScrollPane addressPane = new JScrollPane(addressArea);
 
-	JButton modiBtn, exitBtn;
+	JButton modiBtn, exitBtn, checkNicknameBtn;
 	
 	public MemModiDialog(JFrame frame, String title, int session_idx) {
 		super(frame, title, true);
@@ -61,25 +61,27 @@ public class MemModiDialog extends JDialog {
 		idLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 		idLabel.setBounds(10, 10, 80, 30);
 		add(idField = new JTextField());
-		idField.setBounds(95, 10, 150, 30);
+		idField.setBounds(95, 10, 100, 30);
 		
 		add(nicknameLabel = new JLabel("별명", JLabel.CENTER));
 		nicknameLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 		nicknameLabel.setBounds(10, 40, 80, 30);
 		add(nicknameField = new JTextField());
-		nicknameField.setBounds(95, 40, 150, 30);
+		nicknameField.setBounds(95, 40, 100, 30);
+		add(checkNicknameBtn = new JButton("확인"));
+		checkNicknameBtn.setBounds(200, 40, 60, 30);
 		
 		add(nameLabel = new JLabel("이름", JLabel.CENTER));
 		nameLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 		nameLabel.setBounds(10, 70, 80, 30);
 		add(nameField = new JTextField());
-		nameField.setBounds(95, 70, 150, 30);
+		nameField.setBounds(95, 70, 100, 30);
 		
 		add(ageLabel = new JLabel("나이", JLabel.CENTER));
 		ageLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 		ageLabel.setBounds(10, 100, 80, 30);
 		add(ageField = new JTextField());
-		ageField.setBounds(95, 100, 50, 30);
+		ageField.setBounds(95, 100, 100, 30);
 		
 		add(genderLabel = new JLabel("성별", JLabel.CENTER));
 		genderLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
@@ -91,13 +93,13 @@ public class MemModiDialog extends JDialog {
 		bg.add(femaleBtn);
 		genderPanel.add(maleBtn);
 		genderPanel.add(femaleBtn);
-		genderPanel.setBounds(95, 130, 130, 30);
+		genderPanel.setBounds(95, 130, 110, 30);
 		
 		add(telLabel = new JLabel("전화번호", JLabel.CENTER));
 		telLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 		telLabel.setBounds(10, 160, 80, 30);
 		add(telField = new JTextField());
-		telField.setBounds(95, 160, 150, 30);
+		telField.setBounds(95, 160, 165, 30);
 		
 		add(emailLabel = new JLabel("이메일", JLabel.CENTER));
 		emailLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
@@ -107,13 +109,13 @@ public class MemModiDialog extends JDialog {
 		add(email_golbeng = new JLabel("@"));
 		email_golbeng.setBounds(200, 190, 20, 30);
 		add(emailField_2 = new JComboBox(domeins));
-		emailField_2.setBounds(95, 220, 150, 30);
+		emailField_2.setBounds(95, 220, 165, 30);
 		
 		add(addressLabel = new JLabel("주소", JLabel.CENTER));
 		addressLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 		addressLabel.setBounds(10, 250, 80, 30);
 		add(addressPane);
-		addressPane.setBounds(95, 250, 150, 50);
+		addressPane.setBounds(95, 250, 165, 50);
 		
 		add(modiBtn = new JButton("수정"));
 		modiBtn.setBounds(120, 310, 60, 30);
@@ -122,7 +124,7 @@ public class MemModiDialog extends JDialog {
 		
 		idField.setEditable(false);
 		
-		setSize(270, 385);
+		setSize(280, 385);
 		setLocationRelativeTo(null);
 		setResizable(false);
 		
@@ -163,6 +165,23 @@ public class MemModiDialog extends JDialog {
 	}
 
 	private void generateEvents() {
+		
+		checkNicknameBtn.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Connection conn = GenerateConnection.getConnection();
+				DAO dao = DAO.getInstance();
+				
+				int re = dao.checkNicknameDuplication(conn, getNicknameField());
+				if(re == 1) {
+					JOptionPane.showMessageDialog(null, "이미 사용중인 별명입니다", "회원가입", JOptionPane.WARNING_MESSAGE);
+				} else {
+					JOptionPane.showMessageDialog(null, "사용 가능한 별명입니다", "회원가입", JOptionPane.INFORMATION_MESSAGE);
+				}
+			}
+		});
+		
 		modiBtn.addActionListener(new ActionListener() {
 			
 			@Override

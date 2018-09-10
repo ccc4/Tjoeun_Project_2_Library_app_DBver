@@ -2,8 +2,6 @@ package dialog.book;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DnDConstants;
@@ -15,64 +13,67 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.List;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import frame.ImagePanel;
 
 public class BookAddDialog extends JDialog {
-private boolean value = false;
 	
+	private boolean value = false;
 	String targetImgFilePath = "";
 
-	ImagePanel imagePanel = new ImagePanel();
-	JPanel botPanel = new JPanel(new BorderLayout());
-
-	JLabel titleLabel = new JLabel("Title");
-	JLabel authorLabel = new JLabel("Author");
-	JTextField titleField = new JTextField();
-	JTextField authorField = new JTextField();
-	JButton imgBtn = new JButton("Image");
-	JButton addBtn = new JButton("Add");
-
-	JPanel labelPanel = new JPanel(new GridLayout(2, 1));
-	JPanel fieldPanel = new JPanel(new GridLayout(2, 1));
-	JPanel writePanel = new JPanel(new BorderLayout());
-	JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+	JLabel titleLabel, authorLabel, publisherLabel;
+	JTextField titleField, authorField, publisherField;
+	ImagePanel imagePanel;
+	JButton imgBtn, addBtn;
 
 	private DropTarget dt;
 
 	public BookAddDialog(JFrame frame, String title) {
 		super(frame, title, true);
 
-		labelPanel.add(titleLabel);
-		labelPanel.add(authorLabel);
-		fieldPanel.add(titleField);
-		fieldPanel.add(authorField);
-		writePanel.add(labelPanel, BorderLayout.WEST);
-		writePanel.add(fieldPanel, BorderLayout.CENTER);
-		btnPanel.add(imgBtn);
-		btnPanel.add(addBtn);
+		add(titleLabel = new JLabel("제목"));
+		titleLabel.setBounds(10, 10, 40, 30);
+		add(titleField = new JTextField());
+		titleField.setBounds(55, 10, 120, 30);
 		
-		botPanel.add(writePanel, BorderLayout.CENTER);
-		botPanel.add(btnPanel, BorderLayout.SOUTH);
-
+		add(authorLabel = new JLabel("저자"));
+		authorLabel.setBounds(10, 45, 40, 30);
+		add(authorField = new JTextField());
+		authorField.setBounds(55, 45, 120, 30);
+		
+		add(publisherLabel = new JLabel("출판사"));
+		publisherLabel.setBounds(10, 80, 40, 30);
+		add(publisherField = new JTextField());
+		publisherField.setBounds(55, 80, 120, 30);
+		
+		add(imgBtn = new JButton("이미지 추가"));
+		imgBtn.setBounds(55, 115, 115, 30);
+		
+		add(imagePanel = new ImagePanel());
+		imagePanel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
+		imagePanel.setBounds(180, 10, 140, 190);
+		
+		add(addBtn = new JButton("등록"));
+		addBtn.setBounds(260, 205, 60, 30);
+		
+		
+		
+		
 		getContentPane().setLayout(new BorderLayout());
-		this.add(imagePanel, BorderLayout.CENTER);
-		this.add(botPanel, BorderLayout.SOUTH);
-
 
 		imagePanel.setOpaque(true);
 		imagePanel.setBackground(Color.LIGHT_GRAY);
 
-		setSize(300, 450);
+		setSize(340, 275);
 //		setResizable(false);
 		setLocationRelativeTo(null);
 
@@ -97,7 +98,8 @@ private boolean value = false;
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JFileChooser chooser = new JFileChooser(".");
+				JFileChooser chooser = new JFileChooser("C:\\Users\\402-27\\git\\Tjoeun_Project_1_Library_app\\Library_App\\testImages");
+//				JFileChooser chooser = new JFileChooser("C:\\Users\\402-27\\Desktop");
 				FileNameExtensionFilter filter = new FileNameExtensionFilter("Only JPG", "JPG");
 				chooser.setFileFilter(filter);
 				int ret = chooser.showOpenDialog(null);
@@ -114,17 +116,22 @@ private boolean value = false;
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if(getTitleField().length() == 0) {
-					JOptionPane.showMessageDialog(null, "책 제목을 입력해주세요", "ERROR", JOptionPane.WARNING_MESSAGE);
+					JOptionPane.showMessageDialog(null, "책 제목을 입력해주세요", "책 등록", JOptionPane.WARNING_MESSAGE);
 					titleField.requestFocus();
 					return;
 				}
 				if(getAuthorField().length() == 0) {
-					JOptionPane.showMessageDialog(null, "저자를 입력해주세요", "ERROR", JOptionPane.WARNING_MESSAGE);
+					JOptionPane.showMessageDialog(null, "저자를 입력해주세요", "책 등록", JOptionPane.WARNING_MESSAGE);
 					authorField.requestFocus();
 					return;
 				}
+				if(getPublisherField().length() == 0) {
+					JOptionPane.showMessageDialog(null, "출판사를 입력해주세요", "책 등록", JOptionPane.WARNING_MESSAGE);
+					publisherField.requestFocus();
+					return;
+				}
 				if(targetImgFilePath.length() == 0) {
-					int re = JOptionPane.showConfirmDialog(null, "이미지를 선택하지 않았습니다.\n그대로 진행하시겠습니까?", "No Image", JOptionPane.YES_NO_OPTION);
+					int re = JOptionPane.showConfirmDialog(null, "이미지를 선택하지 않았습니다.\n그대로 진행하시겠습니까?", "책 등록", JOptionPane.YES_NO_OPTION);
 					if(re != JOptionPane.YES_OPTION) return;
 				}
 				
@@ -160,5 +167,13 @@ private boolean value = false;
 
 	public void setAuthorField(JTextField authorField) {
 		this.authorField = authorField;
+	}
+
+	public String getPublisherField() {
+		return publisherField.getText().trim();
+	}
+
+	public void setPublisherField(JTextField publisherField) {
+		this.publisherField = publisherField;
 	}
 }
