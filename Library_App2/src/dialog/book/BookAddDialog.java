@@ -73,8 +73,8 @@ public class BookAddDialog extends JDialog {
 		imagePanel.setOpaque(true);
 		imagePanel.setBackground(Color.LIGHT_GRAY);
 
-		setSize(340, 275);
-//		setResizable(false);
+		setSize(345, 280);
+		setResizable(false);
 		setLocationRelativeTo(null);
 
 		dt = new DropTarget(imagePanel, DnDConstants.ACTION_COPY_OR_MOVE, new DropTargetAdapter() {

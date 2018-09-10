@@ -42,8 +42,9 @@ private boolean value = false;
 		add(loginBtn = new JButton("·Î±×ÀÎ"));
 		loginBtn.setBounds(90, 75, 80, 30);
 		
-		this.setSize(195, 150);
+		this.setSize(190, 150);
 		this.setLocationRelativeTo(null);
+		this.setResizable(false);
 		
 		generateEvents();
 		

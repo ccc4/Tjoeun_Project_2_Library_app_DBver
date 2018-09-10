@@ -105,7 +105,7 @@ private boolean value = false;
 		bg.add(femaleBtn);
 		genderPanel.add(maleBtn);
 		genderPanel.add(femaleBtn);
-		genderPanel.setBounds(95, 190, 110, 30);
+		genderPanel.setBounds(95, 190, 120, 30);
 		
 		add(telLabel = new JLabel("전화번호"));
 //		telLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
@@ -136,9 +136,9 @@ private boolean value = false;
 		
 		
 		
-		setSize(280, 445);
+		setSize(285, 445);
 		setLocationRelativeTo(null);
-//		setResizable(false);
+		setResizable(false);
 		
 		generateEvents();
 	}
@@ -149,6 +149,11 @@ private boolean value = false;
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				if(getIdField().length() == 0) {
+					JOptionPane.showMessageDialog(null, "아이디를 입력해주세요", "회원가입", JOptionPane.WARNING_MESSAGE);
+					idField.requestFocus();
+					return;
+				}
 				Connection conn = GenerateConnection.getConnection();
 				DAO dao = DAO.getInstance();
 				
@@ -165,6 +170,11 @@ private boolean value = false;
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				if(getNicknameField().length() == 0) {
+					JOptionPane.showMessageDialog(null, "별명을 입력해주세요", "회원가입", JOptionPane.WARNING_MESSAGE);
+					nicknameField.requestFocus();
+					return;
+				}
 				Connection conn = GenerateConnection.getConnection();
 				DAO dao = DAO.getInstance();
 				
@@ -197,7 +207,7 @@ private boolean value = false;
 					return;
 				}
 				if(getNicknameField().length() == 0) {
-					JOptionPane.showMessageDialog(null, "닉네임을 입력해주세요", "회원가입", JOptionPane.WARNING_MESSAGE);
+					JOptionPane.showMessageDialog(null, "별명을 입력해주세요", "회원가입", JOptionPane.WARNING_MESSAGE);
 					nicknameField.requestFocus();
 					return;
 				}

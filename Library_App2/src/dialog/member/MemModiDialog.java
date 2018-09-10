@@ -170,6 +170,11 @@ public class MemModiDialog extends JDialog {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				if(getNicknameField().length() == 0) {
+					JOptionPane.showMessageDialog(null, "별명을 입력해주세요", "회원정보 수정", JOptionPane.WARNING_MESSAGE);
+					nicknameField.requestFocus();
+					return;
+				}
 				Connection conn = GenerateConnection.getConnection();
 				DAO dao = DAO.getInstance();
 				
@@ -187,7 +192,7 @@ public class MemModiDialog extends JDialog {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if(getNicknameField().length() == 0) {
-					JOptionPane.showMessageDialog(null, "닉네임을 입력해주세요", "회원정보 수정", JOptionPane.WARNING_MESSAGE);
+					JOptionPane.showMessageDialog(null, "별명을 입력해주세요", "회원정보 수정", JOptionPane.WARNING_MESSAGE);
 					nicknameField.requestFocus();
 					return;
 				}

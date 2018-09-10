@@ -96,9 +96,9 @@ public class BookSearchDialog extends JDialog {
 		getContentPane().setLayout(new BorderLayout());
 
 
-		setSize(340, 310);
-		setResizable(false);
+		setSize(345, 315);
 		setLocationRelativeTo(null);
+		setResizable(false);
 
 		generateEvents();
 	}

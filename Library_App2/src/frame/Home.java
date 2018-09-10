@@ -856,7 +856,7 @@ public class Home extends JFrame {
 				
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					JOptionPane.showMessageDialog(null, "개발중입니다.", "책 검색 버전 2", JOptionPane.INFORMATION_MESSAGE);
+					JOptionPane.showMessageDialog(null, "준비중입니다.", "책 검색 버전 2", JOptionPane.INFORMATION_MESSAGE);
 				}
 			});
 		}
