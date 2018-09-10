@@ -8,7 +8,6 @@ import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -20,6 +19,7 @@ import javax.swing.JTextField;
 
 import dao.DAO;
 import db.util.GenerateConnection;
+import frame.Home;
 
 public class MemJoinDialog extends JDialog {
 private boolean value = false;
@@ -47,7 +47,7 @@ private boolean value = false;
 	
 	
 	
-	public MemJoinDialog(JFrame frame, String title) {
+	public MemJoinDialog(Home frame, String title) {
 		super(frame, title, true);
 		
 		bg.add(maleBtn);

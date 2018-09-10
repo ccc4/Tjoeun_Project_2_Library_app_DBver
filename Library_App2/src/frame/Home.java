@@ -30,9 +30,10 @@ import dao.DAO;
 import db.util.DB_Closer;
 import db.util.GenerateConnection;
 import dialog.book.BookAddDialog;
+import dialog.book.BookModiDialog;
 import dialog.book.BookSearchDialog;
-import dialog.book.BookAddDialog;
 import dialog.member.LoginDialog;
+import dialog.member.MemChangePw;
 import dialog.member.MemJoinDialog;
 import dialog.member.MemModiDialog;
 import dto.BookDTO;
@@ -40,6 +41,7 @@ import dto.MemberDTO;
 import dto.RtListDTO;
 import dto.RvListDTO;
 
+@SuppressWarnings("serial")
 public class Home extends JFrame {
 	// memTop 로그인
 		JLabel memTopNorthLabel = new JLabel("로그인 시 이용가능");
@@ -78,12 +80,15 @@ public class Home extends JFrame {
 		
 		
 		// bookPanel
-		JPanel bookTopPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		JPanel bookTopPanel = new JPanel(new GridLayout(1, 2));
+		JPanel bookTopLeftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		JPanel bookTopRightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		JSplitPane bookMidPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		JPanel bookBotPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		
 		JButton bookSearchBtn = new JButton("책 검색");
 		JButton bookSearchBtn2 = new JButton("책 검색2");
+		JButton messageBtn = new JButton("쪽지");
 		JButton bookRentalBtn = new JButton("대여");
 		JButton bookReserveBtn = new JButton("예약");
 		
@@ -130,8 +135,8 @@ public class Home extends JFrame {
 		JMenuItem admin_Member_Remove = new JMenuItem("회원 삭제");
 		
 		JMenu menu_Member = new JMenu("회원 메뉴");
-		JMenuItem member_ChangePW = new JMenuItem("비밀번호 수정");
-		JMenuItem member_RemoveID = new JMenuItem("회원탈퇴");
+		JMenuItem member_ChangePw = new JMenuItem("비밀번호 수정");
+		JMenuItem member_RemoveId = new JMenuItem("회원탈퇴");
 		
 		
 		
@@ -139,7 +144,8 @@ public class Home extends JFrame {
 		// =======================================================================
 		
 		private Home owner = this;
-		private static int session_idx = 0;
+		private int session_idx = 0;
+		
 		private String selectedBookTitle;
 		private int selectedBookIdx;
 		
@@ -240,8 +246,11 @@ public class Home extends JFrame {
 		class BookPanelClass extends JPanel {
 			public BookPanelClass() {
 				
-				bookTopPanel.add(bookSearchBtn);
-				bookTopPanel.add(bookSearchBtn2);
+				bookTopLeftPanel.add(bookSearchBtn);
+				bookTopLeftPanel.add(bookSearchBtn2);
+				bookTopRightPanel.add(messageBtn);
+				bookTopPanel.add(bookTopLeftPanel);
+				bookTopPanel.add(bookTopRightPanel);
 				
 				bookMidPanel.setResizeWeight(.7);
 				bookMidPanel.setDividerLocation(570);
@@ -318,7 +327,7 @@ public class Home extends JFrame {
 				selectedBookTitle = (String) rtListTable.getModel().getValueAt(rtListTable.getSelectedRow(), 0);
 				selectedBookIdx = dao.getBookIdx_FromTitle(conn, selectedBookTitle);
 				
-				BookDTO dto = dao.getBookInfo(conn, selectedBookIdx);
+//				BookDTO dto = dao.getBookInfo(conn, selectedBookIdx);
 				
 				memMidReturnBtn.setEnabled(true);
 				DB_Closer.close(conn);
@@ -336,7 +345,7 @@ public class Home extends JFrame {
 				selectedBookTitle = (String) rvListTable.getModel().getValueAt(rvListTable.getSelectedRow(), 0);
 				selectedBookIdx = dao.getBookIdx_FromTitle(conn, selectedBookTitle);
 				
-				BookDTO dto = dao.getBookInfo(conn, selectedBookIdx);
+//				BookDTO dto = dao.getBookInfo(conn, selectedBookIdx);
 				
 				memBotRentalBtn.setEnabled(true);
 				memBotReserveCancelBtn.setEnabled(true);
@@ -447,8 +456,8 @@ public class Home extends JFrame {
 				menu_Admin.add(menu_Admin_Book);
 				menu_Admin.add(menu_Admin_Member);
 				
-				menu_Member.add(member_ChangePW);
-				menu_Member.add(member_RemoveID);
+				menu_Member.add(member_ChangePw);
+				menu_Member.add(member_RemoveId);
 				
 				this.add(menu_Option);
 				this.add(menu_Admin);
@@ -661,6 +670,20 @@ public class Home extends JFrame {
 				}
 			});
 			
+			this.admin_Book_Modify.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					BookModiDialog bookModiDialog = new BookModiDialog(owner, "책 수정");
+					bookModiDialog.setVisible(true);
+					
+					if(!bookModiDialog.check()) return;
+					
+					
+					
+				}
+			});
+			
 			this.bookRentalBtn.addActionListener(new ActionListener() {
 				
 				@Override
@@ -867,6 +890,49 @@ public class Home extends JFrame {
 					JOptionPane.showMessageDialog(null, "준비중입니다.", "책 검색 버전 2", JOptionPane.INFORMATION_MESSAGE);
 				}
 			});
+			
+			this.messageBtn.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					JOptionPane.showMessageDialog(null, "준비중입니다.", "쪽지함", JOptionPane.INFORMATION_MESSAGE);
+				}
+			});
+			
+			this.member_ChangePw.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					MemChangePw memChangePw = new MemChangePw(owner, "비밀번호 변경");
+					memChangePw.setVisible(true);
+					
+					if(!memChangePw.check()) return;
+					
+					Connection conn = GenerateConnection.getConnection();
+					DAO dao = DAO.getInstance();
+					
+					String beforePw = memChangePw.getBeforePwField();
+					String afterPw = memChangePw.getAfterPwField();
+					
+					MemberDTO dto = dao.getMemberInfo(conn, getSession_idx());
+					int re1 = dao.mLogin(conn, dto.getId(), beforePw);
+					if(re1 == 0) {
+						JOptionPane.showMessageDialog(null, "현재 비밀번호를 확인해주세요.", "비밀번호 변경", JOptionPane.WARNING_MESSAGE);
+					} else if(re1 != 0 && (beforePw.equals(afterPw))){
+						JOptionPane.showMessageDialog(null, "현재 비밀번호와 같은 비밀번호로는 변경할 수 없습니다.\n다른 비밀번호를 사욯해주세요.", "비밀번호 변경", JOptionPane.WARNING_MESSAGE);
+					} else {
+						int re2 = dao.mChangePw(conn, getSession_idx(), afterPw);
+						if(re2 == 0) {
+							JOptionPane.showMessageDialog(null, "비밀번호 변경 실패\n계속 반복될 경우 관리자에게 문의하세요.", "비밀번호 변경", JOptionPane.WARNING_MESSAGE);
+						} else {
+							JOptionPane.showMessageDialog(null, "비밀번호 변경 완료\n다시 로그인해주세요.", "비밀번호 변경", JOptionPane.INFORMATION_MESSAGE);
+							logout();
+						}
+					}
+					
+					DB_Closer.close(conn);
+				}
+			});
 		}
 		
 		public void controlBtn() {
@@ -889,6 +955,7 @@ public class Home extends JFrame {
 			
 			this.bookSearchBtn.setEnabled(true);
 			this.bookSearchBtn2.setEnabled(true);
+			this.messageBtn.setEnabled(true);
 //			this.bookRentalBtn.setEnabled(true);
 //			this.bookReserveBtn.setEnabled(true);
 			
@@ -909,6 +976,7 @@ public class Home extends JFrame {
 			
 			this.bookSearchBtn.setEnabled(false);
 			this.bookSearchBtn2.setEnabled(false);
+			this.messageBtn.setEnabled(false);
 			this.bookRentalBtn.setEnabled(false);
 			this.bookReserveBtn.setEnabled(false);
 			

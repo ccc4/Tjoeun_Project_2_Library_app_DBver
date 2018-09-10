@@ -763,4 +763,34 @@ public class DAO {
 		
 		return re;
 	}
+
+	public int mChangePw(Connection conn, int session_idx, String afterPw) {
+
+		int re = 0;
+		
+		PreparedStatement pstmt = null;
+		
+		String sql = "UPDATE member SET m_pw = ? WHERE m_idx = ?";
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, afterPw);
+			pstmt.setInt(2, session_idx);
+			
+			int check = pstmt.executeUpdate();
+			
+			if(check == 0) {
+				re = 0;
+			} else {
+				re = 1;
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DB_Closer.close(pstmt);
+		}
+		
+		return re;
+	}
 }

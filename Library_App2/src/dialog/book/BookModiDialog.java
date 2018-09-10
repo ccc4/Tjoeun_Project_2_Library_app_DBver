@@ -25,45 +25,52 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import frame.Home;
 import frame.ImagePanel;
 
-public class BookAddDialog extends JDialog {
+public class BookModiDialog extends JDialog {
 	
 	private boolean value = false;
 	String targetImgFilePath = "";
 
-	JLabel titleLabel, authorLabel, publisherLabel;
-	JTextField titleField, authorField, publisherField;
+	JLabel titleLabel, authorLabel, publisherLabel, searchLabel;
+	JTextField titleField, authorField, publisherField, searchField;
 	ImagePanel imagePanel;
-	JButton imgBtn, addBtn;
+	JButton imgBtn, modifyBtn, searchBtn;
 
 	private DropTarget dt;
 
-	public BookAddDialog(Home frame, String title) {
+	public BookModiDialog(Home frame, String title) {
 		super(frame, title, true);
+		
+		add(searchLabel = new JLabel("검색"));
+		searchLabel.setBounds(10, 10, 40, 30);
+		add(searchField = new JTextField());
+		searchField.setBounds(55, 10, 200, 30);
+		add(searchBtn = new JButton("검색"));
+		searchBtn.setBounds(260, 10, 60, 30);
 
 		add(titleLabel = new JLabel("제목"));
-		titleLabel.setBounds(10, 10, 40, 30);
+		titleLabel.setBounds(10, 45, 40, 30);
 		add(titleField = new JTextField());
-		titleField.setBounds(55, 10, 120, 30);
+		titleField.setBounds(55, 45, 120, 30);
 		
 		add(authorLabel = new JLabel("저자"));
-		authorLabel.setBounds(10, 45, 40, 30);
+		authorLabel.setBounds(10, 80, 40, 30);
 		add(authorField = new JTextField());
-		authorField.setBounds(55, 45, 120, 30);
+		authorField.setBounds(55, 80, 120, 30);
 		
 		add(publisherLabel = new JLabel("출판사"));
-		publisherLabel.setBounds(10, 80, 40, 30);
+		publisherLabel.setBounds(10, 115, 40, 30);
 		add(publisherField = new JTextField());
-		publisherField.setBounds(55, 80, 120, 30);
+		publisherField.setBounds(55, 115, 120, 30);
 		
 		add(imgBtn = new JButton("이미지 추가"));
-		imgBtn.setBounds(55, 115, 115, 30);
+		imgBtn.setBounds(55, 150, 115, 30);
 		
 		add(imagePanel = new ImagePanel());
 		imagePanel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-		imagePanel.setBounds(180, 10, 140, 190);
+		imagePanel.setBounds(180, 45, 140, 190);
 		
-		add(addBtn = new JButton("등록"));
-		addBtn.setBounds(260, 205, 60, 30);
+		add(modifyBtn = new JButton("수정"));
+		modifyBtn.setBounds(260, 240, 60, 30);
 		
 		
 		
@@ -73,7 +80,7 @@ public class BookAddDialog extends JDialog {
 		imagePanel.setOpaque(true);
 		imagePanel.setBackground(Color.LIGHT_GRAY);
 
-		setSize(345, 280);
+		setSize(345, 315);
 		setResizable(false);
 		setLocationRelativeTo(null);
 		
@@ -117,7 +124,7 @@ public class BookAddDialog extends JDialog {
 			}
 		});
 		
-		this.addBtn.addActionListener(new ActionListener() {
+		this.modifyBtn.addActionListener(new ActionListener() {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -140,13 +147,15 @@ public class BookAddDialog extends JDialog {
 					int re = JOptionPane.showConfirmDialog(null, "이미지를 선택하지 않았습니다.\n그대로 진행하시겠습니까?", "책 등록", JOptionPane.YES_NO_OPTION);
 					if(re != JOptionPane.YES_OPTION) return;
 				}
+				int check = JOptionPane.showConfirmDialog(null, "이대로 수정을 완료하시겠습니까?", "책 수정", JOptionPane.YES_NO_OPTION);
+				if(check != JOptionPane.YES_OPTION) return;
 				
 				value = true;
 				setVisible(false);
 			}
 		});
 	}
-	
+
 	public boolean check() {
 		return this.value;
 	}

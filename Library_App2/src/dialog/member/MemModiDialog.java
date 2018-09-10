@@ -10,11 +10,9 @@ import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JPasswordField;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -24,6 +22,7 @@ import dao.DAO;
 import db.util.DB_Closer;
 import db.util.GenerateConnection;
 import dto.MemberDTO;
+import frame.Home;
 
 public class MemModiDialog extends JDialog {
 	private boolean value = false;
@@ -48,7 +47,7 @@ public class MemModiDialog extends JDialog {
 
 	JButton modiBtn, exitBtn, checkNicknameBtn;
 	
-	public MemModiDialog(JFrame frame, String title, int session_idx) {
+	public MemModiDialog(Home frame, String title, int session_idx) {
 		super(frame, title, true);
 		this.session_idx = session_idx;
 		

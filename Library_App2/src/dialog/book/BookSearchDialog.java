@@ -3,27 +3,16 @@ package dialog.book;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetAdapter;
-import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.sql.Connection;
-import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
-import javax.swing.filechooser.FileNameExtensionFilter;
 
 import dao.DAO;
 import db.util.GenerateConnection;
@@ -41,8 +30,6 @@ public class BookSearchDialog extends JDialog {
 	
 	ImagePanel imagePanel;
 	JButton searchBtn, rentalBtn, reserveBtn;
-
-	private DropTarget dt;
 
 	public BookSearchDialog(Home frame, String title) {
 		super(frame, title, true);
@@ -182,36 +169,6 @@ public class BookSearchDialog extends JDialog {
 			}
 		});
 	}
-//		
-//		this.addBtn.addActionListener(new ActionListener() {
-//			
-//			@Override
-//			public void actionPerformed(ActionEvent e) {
-//				if(getTitleField().length() == 0) {
-//					JOptionPane.showMessageDialog(null, "책 제목을 입력해주세요", "책 등록", JOptionPane.WARNING_MESSAGE);
-//					titleField.requestFocus();
-//					return;
-//				}
-//				if(getAuthorField().length() == 0) {
-//					JOptionPane.showMessageDialog(null, "저자를 입력해주세요", "책 등록", JOptionPane.WARNING_MESSAGE);
-//					authorField.requestFocus();
-//					return;
-//				}
-//				if(getPublisherField().length() == 0) {
-//					JOptionPane.showMessageDialog(null, "출판사를 입력해주세요", "책 등록", JOptionPane.WARNING_MESSAGE);
-//					publisherField.requestFocus();
-//					return;
-//				}
-//				if(targetImgFilePath.length() == 0) {
-//					int re = JOptionPane.showConfirmDialog(null, "이미지를 선택하지 않았습니다.\n그대로 진행하시겠습니까?", "책 등록", JOptionPane.YES_NO_OPTION);
-//					if(re != JOptionPane.YES_OPTION) return;
-//				}
-//				
-//				value = true;
-//				setVisible(false);
-//			}
-//		});
-
 
 	public int check() {
 		return this.value;
