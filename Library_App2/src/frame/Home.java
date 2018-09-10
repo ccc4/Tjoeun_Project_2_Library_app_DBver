@@ -265,6 +265,7 @@ public class Home extends JFrame {
 		class BookListSelectedRow extends MouseAdapter {
 			@Override
 			public void mousePressed(MouseEvent e) {
+				controlBtn();
 				Connection conn = GenerateConnection.getConnection();
 				DAO dao = DAO.getInstance();
 				String bookImgName = "";
@@ -310,7 +311,7 @@ public class Home extends JFrame {
 			
 			@Override
 			public void mousePressed(MouseEvent e) {
-//				memMidReturnBtn.setEnabled(false);
+				controlBtn();
 				Connection conn = GenerateConnection.getConnection();
 				DAO dao = DAO.getInstance();
 				
@@ -328,7 +329,7 @@ public class Home extends JFrame {
 			
 			@Override
 			public void mousePressed(MouseEvent e) {
-//				memMidReturnBtn.setEnabled(false);
+				controlBtn();
 				Connection conn = GenerateConnection.getConnection();
 				DAO dao = DAO.getInstance();
 				
@@ -664,6 +665,7 @@ public class Home extends JFrame {
 				
 				@Override
 				public void actionPerformed(ActionEvent e) {
+					controlBtn();
 					int check = JOptionPane.showConfirmDialog(null, "이 책을 대여하시겠습니까?", "책 대여", JOptionPane.YES_NO_OPTION);
 					if(check != JOptionPane.YES_OPTION) return;
 					
@@ -694,6 +696,7 @@ public class Home extends JFrame {
 				
 				@Override
 				public void actionPerformed(ActionEvent e) {
+					controlBtn();
 					int check = JOptionPane.showConfirmDialog(null, "이 책을 예약하시겠습니까?", "책 예약", JOptionPane.YES_NO_OPTION);
 					if(check != JOptionPane.YES_OPTION) return;
 					
@@ -719,6 +722,7 @@ public class Home extends JFrame {
 				
 				@Override
 				public void actionPerformed(ActionEvent e) {
+					controlBtn();
 					int check = JOptionPane.showConfirmDialog(null, "이 책을 반납하시겠습니까?", "책 반납", JOptionPane.YES_NO_OPTION);
 					if(check != JOptionPane.YES_OPTION) return;
 					
@@ -743,6 +747,7 @@ public class Home extends JFrame {
 				
 				@Override
 				public void actionPerformed(ActionEvent e) {
+					controlBtn();
 					int check = JOptionPane.showConfirmDialog(null, "이 책을 대여하시겠습니까?", "책 대여", JOptionPane.YES_NO_OPTION);
 					if(check != JOptionPane.YES_OPTION) return;
 					
@@ -772,6 +777,7 @@ public class Home extends JFrame {
 				
 				@Override
 				public void actionPerformed(ActionEvent e) {
+					controlBtn();
 					int check = JOptionPane.showConfirmDialog(null, "이 책의 예약을 취소하시겠습니까?", "책 예약취소", JOptionPane.YES_NO_OPTION);
 					if(check != JOptionPane.YES_OPTION) return;
 					
@@ -797,6 +803,7 @@ public class Home extends JFrame {
 				
 				@Override
 				public void actionPerformed(ActionEvent e) {
+					controlBtn();
 					BookSearchDialog bookSearchDialog = new BookSearchDialog(owner, "책 검색");
 					bookSearchDialog.setVisible(true);
 					
@@ -856,11 +863,19 @@ public class Home extends JFrame {
 				
 				@Override
 				public void actionPerformed(ActionEvent e) {
+					controlBtn();
 					JOptionPane.showMessageDialog(null, "준비중입니다.", "책 검색 버전 2", JOptionPane.INFORMATION_MESSAGE);
 				}
 			});
 		}
 		
+		public void controlBtn() {
+			bookRentalBtn.setEnabled(false);
+			bookReserveBtn.setEnabled(false);
+			memMidReturnBtn.setEnabled(false);
+			memBotRentalBtn.setEnabled(false);
+			memBotReserveCancelBtn.setEnabled(false);
+		}
 		
 		public void loginSuccess() {
 			this.memLoginBtn.setEnabled(false);
