@@ -36,46 +36,46 @@ public class BookSearchDialog extends JDialog {
 		this.frame = frame;
 
 		add(searchLabel = new JLabel("검색"));
-		searchLabel.setBounds(10, 10, 40, 30);
+		searchLabel.setBounds(10, 0, 40, 30);
 		add(searchField = new JTextField());
-		searchField.setBounds(55, 10, 200, 30);
+		searchField.setBounds(55, 0, 200, 30);
 		add(searchBtn = new JButton("검색"));
-		searchBtn.setBounds(260, 10, 60, 30);
+		searchBtn.setBounds(260, 0, 60, 30);
 		
 		add(titleLabel = new JLabel("제목"));
-		titleLabel.setBounds(10, 45, 40, 30);
+		titleLabel.setBounds(10, 35, 40, 30);
 		add(titleField = new JTextField());
 		titleField.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-		titleField.setBounds(55, 45, 120, 30);
+		titleField.setBounds(55, 35, 120, 30);
 		titleField.setEditable(false);
 		
 		add(authorLabel = new JLabel("저자"));
-		authorLabel.setBounds(10, 80, 40, 30);
+		authorLabel.setBounds(10, 70, 40, 30);
 		add(authorField = new JTextField());
 		authorField.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-		authorField.setBounds(55, 80, 120, 30);
+		authorField.setBounds(55, 70, 120, 30);
 		authorField.setEditable(false);
 		
 		add(publisherLabel = new JLabel("출판사"));
-		publisherLabel.setBounds(10, 115, 40, 30);
+		publisherLabel.setBounds(10, 105, 40, 30);
 		add(publisherField = new JTextField());
 		publisherField.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-		publisherField.setBounds(55, 115, 120, 30);
+		publisherField.setBounds(55, 105, 120, 30);
 		publisherField.setEditable(false);
 		
 		add(stateLabel = new JLabel("현재 상태", JLabel.CENTER));
 		stateLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-		stateLabel.setBounds(55, 205, 115, 30);
+		stateLabel.setBounds(55, 195, 115, 30);
 		stateLabel.setFont(new Font("GOTHIC", Font.BOLD, 15));
 		
 		add(imagePanel = new ImagePanel());
 		imagePanel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-		imagePanel.setBounds(180, 45, 140, 190);
+		imagePanel.setBounds(180, 35, 140, 190);
 		
-		add(reserveBtn = new JButton("예약"));
-		reserveBtn.setBounds(195, 240, 60, 30);
 		add(rentalBtn = new JButton("대여"));
-		rentalBtn.setBounds(260, 240, 60, 30);
+		rentalBtn.setBounds(195, 230, 60, 30);
+		add(reserveBtn = new JButton("예약"));
+		reserveBtn.setBounds(260, 230, 60, 30);
 		
 		
 		
@@ -83,7 +83,7 @@ public class BookSearchDialog extends JDialog {
 		getContentPane().setLayout(new BorderLayout());
 
 
-		setSize(345, 315);
+		setSize(340, 295);
 		setLocationRelativeTo(null);
 		setResizable(false);
 
@@ -119,16 +119,22 @@ public class BookSearchDialog extends JDialog {
 					publisherField.setText("  " + dto.getPublisher());
 					
 					int checkReservation = dao.checkBookReservation(conn, b_idx);
-//					int checkReservationMine = dao.checkBookReservationMine(conn, frame.getSession_idx(), b_idx);
+					int checkReservationMine = dao.checkBookReservationMine(conn, frame.getSession_idx(), b_idx);
 //					이걸로 여기서도 예약된 내 첵을 대여할 수 있게 만들기
 					int checkRental = dao.checkBookRental(conn, b_idx);
 					
 					if(checkReservation == 1 & checkRental == 0) {
-//						if
-						stateLabel.setText("예약중");
-						stateLabel.setForeground(Color.BLUE);
-						rentalBtn.setEnabled(false);
-						reserveBtn.setEnabled(false);
+						if(checkReservationMine == 1) {
+							stateLabel.setText("예약중");
+							stateLabel.setForeground(Color.BLUE);
+							rentalBtn.setEnabled(true);
+							reserveBtn.setEnabled(false);
+						} else {
+							stateLabel.setText("예약중");
+							stateLabel.setForeground(Color.BLUE);
+							rentalBtn.setEnabled(false);
+							reserveBtn.setEnabled(false);
+						}
 					} else if(checkReservation == 0 & checkRental == 1) {
 						stateLabel.setText("대여중");
 						stateLabel.setForeground(Color.RED);

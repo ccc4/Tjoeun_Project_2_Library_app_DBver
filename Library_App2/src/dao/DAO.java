@@ -16,6 +16,7 @@ import javax.swing.JOptionPane;
 
 import db.util.*;
 import dto.BookDTO;
+import dto.LetterDTO;
 import dto.MemberDTO;
 import dto.RtListDTO;
 import dto.RvListDTO;
@@ -398,27 +399,27 @@ public class DAO {
 				re = 0;
 			} else {
 				re = 1;
+				// 책 이미지 저장 (등록했으면)
+				if(imgName.trim().length() != 0) {
+					File targetImgFile = new File(targetImgFilePath);
+					byte[] targetImgFileContents = new byte[(int) targetImgFile.length()];
+					
+					File saveImgFileDir = new File(BOOK_IMAGES_DIR);
+					if(!saveImgFileDir.exists()) saveImgFileDir.mkdirs();
+					File saveFileName = new File(saveImgFileDir, imgName);
+					
+					BufferedInputStream in = new BufferedInputStream(new FileInputStream(targetImgFile));
+					BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(saveFileName));
+					in.read(targetImgFileContents);
+					out.write(targetImgFileContents);
+					out.flush();
+					JOptionPane.showMessageDialog(null, "책 이미지 저장 완료", "책 등록", JOptionPane.INFORMATION_MESSAGE);
+					
+					out.close();
+					in.close();
+				}
 			}
 			
-			// 책 이미지 저장 (등록했으면)
-			if(!imgName.equals("")) {
-				File targetImgFile = new File(targetImgFilePath);
-				byte[] targetImgFileContents = new byte[(int) targetImgFile.length()];
-				
-				File saveImgFileDir = new File(BOOK_IMAGES_DIR);
-				if(!saveImgFileDir.exists()) saveImgFileDir.mkdirs();
-				File saveFileName = new File(saveImgFileDir, imgName);
-				
-				BufferedInputStream in = new BufferedInputStream(new FileInputStream(targetImgFile));
-				BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(saveFileName));
-				in.read(targetImgFileContents);
-				out.write(targetImgFileContents);
-				out.flush();
-				JOptionPane.showMessageDialog(null, "책 이미지 저장 완료", "책 등록", JOptionPane.INFORMATION_MESSAGE);
-				
-				out.close();
-				in.close();
-			}
 			
 			
 		} catch (Exception e) {
@@ -792,5 +793,242 @@ public class DAO {
 		}
 		
 		return re;
+	}
+
+	public int bModify(Connection conn, int b_idx, String title, String author, String publisher, String imgName,
+			String targetImgFilePath) {
+		
+		int re = 0;
+		
+		PreparedStatement pstmt = null;
+		
+		String sql = "UPDATE book SET b_title = ?, b_author = ?, b_publisher = ?, b_imgName = ? WHERE b_idx = ?";
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, title);
+			pstmt.setString(2, author);
+			pstmt.setString(3, publisher);
+			pstmt.setString(4, imgName);
+			pstmt.setInt(5, b_idx);
+			
+			int check = pstmt.executeUpdate();
+			
+			if(check == 0) {
+				re = 0;
+			} else {
+				re = 1;
+				if(imgName.trim().length() != 0) {
+					File targetImgFile = new File(targetImgFilePath);
+					byte[] targetImgFileContents = new byte[(int) targetImgFile.length()];
+					
+					File saveImgFileDir = new File(BOOK_IMAGES_DIR);
+					if(!saveImgFileDir.exists()) saveImgFileDir.mkdirs();
+					File saveFileName = new File(saveImgFileDir, imgName);
+					
+					BufferedInputStream in = new BufferedInputStream(new FileInputStream(targetImgFile));
+					BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(saveFileName));
+					in.read(targetImgFileContents);
+					out.write(targetImgFileContents);
+					out.flush();
+					JOptionPane.showMessageDialog(null, "책 이미지 저장 완료", "책 등록", JOptionPane.INFORMATION_MESSAGE);
+					
+					out.close();
+					in.close();
+				}
+			}
+			
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DB_Closer.close(pstmt);
+		}
+		
+		return re;
+	}
+
+	public int getMemberIdx_FromNickname(Connection conn, String nickname) {
+		
+		int idx = 0;
+		
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		
+		String sql = "SELECT m_idx FROM member WHERE m_nickname = ?";
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, nickname);
+			rs = pstmt.executeQuery();
+			
+			if(rs.next()) {
+				idx = rs.getInt("m_idx");
+			}
+			
+		} catch (Exception e) {
+			idx = 0;
+		} finally {
+			DB_Closer.close(pstmt);
+		}
+		
+		return idx;
+	}
+
+	public int lSend(Connection conn, String title, String contents, int sender_idx, int receiver_idx) {
+
+		int re = 0;
+		
+		PreparedStatement pstmt = null;
+		
+		String sql = "INSERT INTO letter (l_title, l_contents, l_sender_idx, l_receiver_idx) VALUES (?, ?, ?, ?)";
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, title);
+			pstmt.setString(2, contents);
+			pstmt.setInt(3, sender_idx);
+			pstmt.setInt(4, receiver_idx);
+			
+			int check = pstmt.executeUpdate();
+			
+			if(check == 0) {
+				re = 0;
+			} else {
+				re = 1;
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DB_Closer.close(pstmt);
+		}
+
+		return re;
+	}
+
+	public ArrayList<LetterDTO> getMyReceiveLetterList(Connection conn, int session_idx) {
+
+		ArrayList<LetterDTO> dtos = new ArrayList<>();
+		LetterDTO dto = null;
+		
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		
+		String sql = "SELECT * FROM letter_view WHERE l_receiver_idx = ? ORDER BY l_sendDate DESC";
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, session_idx);
+			rs = pstmt.executeQuery();
+			
+			while(rs.next()) {
+				int idx = rs.getInt("l_idx");
+				String title = rs.getString("l_title");
+				String contents = rs.getString("l_contents");
+				String senderNickname = rs.getString("sender_nickname");
+				Timestamp sendDate = rs.getTimestamp("l_sendDate");
+				Timestamp readDate = rs.getTimestamp("l_readDate");
+				
+				dto = new LetterDTO(idx, title, contents, senderNickname, sendDate, readDate);
+				dtos.add(dto);
+			}
+			
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DB_Closer.close(rs);
+			DB_Closer.close(pstmt);
+		}
+		
+		return dtos;
+	}
+
+	public ArrayList<LetterDTO> getMySendLetterList(Connection conn, int session_idx) {
+		
+		ArrayList<LetterDTO> dtos = new ArrayList<>();
+		LetterDTO dto = null;
+		
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		
+		String sql = "SELECT * FROM letter_view WHERE l_sender_idx = ? ORDER BY l_sendDate DESC";
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, session_idx);
+			rs = pstmt.executeQuery();
+			
+			while(rs.next()) {
+				int idx = rs.getInt("l_idx");
+				String title = rs.getString("l_title");
+				String contents = rs.getString("l_contents");
+				String receiverNickname = rs.getString("receiver_nickname");
+				Timestamp sendDate = rs.getTimestamp("l_sendDate");
+				Timestamp readDate = rs.getTimestamp("l_readDate");
+				
+				dto = new LetterDTO(idx, title, contents, receiverNickname, sendDate, readDate);
+				dtos.add(dto);
+			}
+			
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DB_Closer.close(rs);
+			DB_Closer.close(pstmt);
+		}
+		
+		return dtos;
+	}
+
+	public int checkLetter(Connection conn, int session_idx) {
+
+		int re = 0;
+		
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		
+		String sql = "SELECT * FROM letter_view WHERE l_receiver_idx = ? AND l_readDate IS NULL";
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, session_idx);
+			rs = pstmt.executeQuery();
+			
+			if(rs.next()) {
+				re = 1;
+			} else {
+				re = 0;
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DB_Closer.close(rs);
+			DB_Closer.close(pstmt);
+		}
+		
+		return re;
+	}
+	
+	public void lReadLetter(Connection conn, int session_idx) {
+		
+		PreparedStatement pstmt = null;
+		
+		String sql = "";
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			
+			
+			
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DB_Closer.close(pstmt);
+		}
 	}
 }

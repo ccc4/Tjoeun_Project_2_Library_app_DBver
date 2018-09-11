@@ -25,24 +25,24 @@ public class MemChangePw extends JDialog {
 		getContentPane().setLayout(null);
 		
 		add(beforePwLabel = new JLabel("현재 비밀번호"));
-		beforePwLabel.setBounds(10, 10, 85, 30);
+		beforePwLabel.setBounds(10, 0, 85, 30);
 		add(beforePwField = new JPasswordField());
-		beforePwField.setBounds(100, 10, 120, 30);
+		beforePwField.setBounds(100, 0, 120, 30);
 		
 		add(afterPwLabel = new JLabel("신규 비밀번호"));
-		afterPwLabel.setBounds(10, 40, 85, 30);
+		afterPwLabel.setBounds(10, 30, 85, 30);
 		add(afterPwField = new JPasswordField());
-		afterPwField.setBounds(100, 40, 120, 30);
+		afterPwField.setBounds(100, 30, 120, 30);
 		
 		add(afterPwCheckLabel = new JLabel("비밀번호 확인"));
-		afterPwCheckLabel.setBounds(10, 70, 85, 30);
+		afterPwCheckLabel.setBounds(10, 60, 85, 30);
 		add(afterPwCheckField = new JPasswordField());
-		afterPwCheckField.setBounds(100, 70, 120, 30);
+		afterPwCheckField.setBounds(100, 60, 120, 30);
 		
 		add(changeBtn = new JButton("변경"));
-		changeBtn.setBounds(160, 105, 60, 30);
+		changeBtn.setBounds(160, 95, 60, 30);
 		
-		this.setSize(245, 180);
+		this.setSize(235, 160);
 //		setResizable(false);
 		this.setLocationRelativeTo(null);
 		

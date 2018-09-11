@@ -41,29 +41,29 @@ public class BookAddDialog extends JDialog {
 		super(frame, title, true);
 
 		add(titleLabel = new JLabel("제목"));
-		titleLabel.setBounds(10, 10, 40, 30);
+		titleLabel.setBounds(10, 0, 40, 30);
 		add(titleField = new JTextField());
-		titleField.setBounds(55, 10, 120, 30);
+		titleField.setBounds(55, 0, 120, 30);
 		
 		add(authorLabel = new JLabel("저자"));
-		authorLabel.setBounds(10, 45, 40, 30);
+		authorLabel.setBounds(10, 30, 40, 30);
 		add(authorField = new JTextField());
-		authorField.setBounds(55, 45, 120, 30);
+		authorField.setBounds(55, 30, 120, 30);
 		
 		add(publisherLabel = new JLabel("출판사"));
-		publisherLabel.setBounds(10, 80, 40, 30);
+		publisherLabel.setBounds(10, 60, 40, 30);
 		add(publisherField = new JTextField());
-		publisherField.setBounds(55, 80, 120, 30);
+		publisherField.setBounds(55, 60, 120, 30);
 		
 		add(imgBtn = new JButton("이미지 추가"));
-		imgBtn.setBounds(55, 115, 115, 30);
+		imgBtn.setBounds(55, 95, 115, 30);
 		
 		add(imagePanel = new ImagePanel());
 		imagePanel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-		imagePanel.setBounds(180, 10, 140, 190);
+		imagePanel.setBounds(180, 0, 140, 190);
 		
 		add(addBtn = new JButton("등록"));
-		addBtn.setBounds(260, 205, 60, 30);
+		addBtn.setBounds(260, 195, 60, 30);
 		
 		
 		
@@ -73,7 +73,7 @@ public class BookAddDialog extends JDialog {
 		imagePanel.setOpaque(true);
 		imagePanel.setBackground(Color.LIGHT_GRAY);
 
-		setSize(345, 280);
+		setSize(340, 260);
 		setResizable(false);
 		setLocationRelativeTo(null);
 		

@@ -25,19 +25,19 @@ private boolean value = false;
 		getContentPane().setLayout(null);
 
 		add(idLabel = new JLabel("아이디"));
-		idLabel.setBounds(10, 10, 60, 30);
+		idLabel.setBounds(10, 0, 60, 30);
 		add(idField = new JTextField());
-		idField.setBounds(70, 10, 100, 30);
+		idField.setBounds(70, 0, 100, 30);
 		
 		add(pwLabel = new JLabel("비밀번호"));
-		pwLabel.setBounds(10, 40, 60, 30);
+		pwLabel.setBounds(10, 30, 60, 30);
 		add(pwField = new JPasswordField());
-		pwField.setBounds(70, 40, 100, 30);
+		pwField.setBounds(70, 30, 100, 30);
 		
 		add(loginBtn = new JButton("로그인"));
-		loginBtn.setBounds(90, 75, 80, 30);
+		loginBtn.setBounds(90, 65, 80, 30);
 		
-		this.setSize(190, 150);
+		this.setSize(190, 130);
 		this.setLocationRelativeTo(null);
 		this.setResizable(false);
 		

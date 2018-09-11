@@ -32,6 +32,8 @@ import db.util.GenerateConnection;
 import dialog.book.BookAddDialog;
 import dialog.book.BookModiDialog;
 import dialog.book.BookSearchDialog;
+import dialog.letter.LetterDialog;
+import dialog.letter.LetterDialog;
 import dialog.member.LoginDialog;
 import dialog.member.MemChangePw;
 import dialog.member.MemJoinDialog;
@@ -88,7 +90,7 @@ public class Home extends JFrame {
 		
 		JButton bookSearchBtn = new JButton("책 검색");
 		JButton bookSearchBtn2 = new JButton("책 검색2");
-		JButton messageBtn = new JButton("쪽지");
+		JButton LetterBtn = new JButton("편지함");
 		JButton bookRentalBtn = new JButton("대여");
 		JButton bookReserveBtn = new JButton("예약");
 		
@@ -248,7 +250,7 @@ public class Home extends JFrame {
 				
 				bookTopLeftPanel.add(bookSearchBtn);
 				bookTopLeftPanel.add(bookSearchBtn2);
-				bookTopRightPanel.add(messageBtn);
+				bookTopRightPanel.add(LetterBtn);
 				bookTopPanel.add(bookTopLeftPanel);
 				bookTopPanel.add(bookTopRightPanel);
 				
@@ -274,11 +276,13 @@ public class Home extends JFrame {
 		class BookListSelectedRow extends MouseAdapter {
 			@Override
 			public void mousePressed(MouseEvent e) {
+				
 				controlBtn();
+				
 				Connection conn = GenerateConnection.getConnection();
 				DAO dao = DAO.getInstance();
-				String bookImgName = "";
 				
+				String bookImgName = "";
 				selectedBookTitle = (String) bookListTable.getModel().getValueAt(bookListTable.getSelectedRow(), 0);
 				selectedBookIdx = dao.getBookIdx_FromTitle(conn, selectedBookTitle);
 				
@@ -512,23 +516,11 @@ public class Home extends JFrame {
 					LoginDialog memLoginDialog = new LoginDialog(owner, "로그인");
 					memLoginDialog.setVisible(true);
 					
-					if(!memLoginDialog.check()) {
-//						JOptionPane.showMessageDialog(null, "로그인ㄴㅇㄹ을 취소하였습니다.", "Cancel", JOptionPane.INFORMATION_MESSAGE);
-						return;
-					}
+					if(!memLoginDialog.check()) return;
+					
 					String id = memLoginDialog.getIdField();
 					String pw = memLoginDialog.getPwField();
 					
-//					if(!(id.equals("abcd") && pw.equals("1234"))) {
-//						JOptionPane.showMessageDialog(null, "잘못된 정보", "WRONG", JOptionPane.WARNING_MESSAGE);
-//						return;
-//					}
-//					setSession_id(id);
-//					loginSuccess();
-//					memTopNorthLabel.setText("Welcome " + id + " !!");
-					
-					
-//					로그인 기능
 					Connection conn = GenerateConnection.getConnection();
 					DAO dao = DAO.getInstance();
 					
@@ -541,15 +533,18 @@ public class Home extends JFrame {
 						memTopNorthLabel.setText(dto.getNickname() + " 님 어서오세용");
 						loginSuccess();
 						refreshTable();
-//						JOptionPane.showMessageDialog(null, "로그인 성공!\n" + id + " 님 어서오세요.", "로그인", JOptionPane.INFORMATION_MESSAGE);
 						
-//						안 읽은 메시지 있을 시 팝업
-//						if() {
-//							JOptionPane.showMessageDialog(null, "adf 성공!\n" + id + " 님 어서오세요.", "SUCCESS!", JOptionPane.INFORMATION_MESSAGE);
-//							
-//						}
-						
-						
+						// 로그인할 때 안 읽은 메시지가 있는 경우 팝업
+						int re2 = dao.checkLetter(conn, getSession_idx());
+						if(re2 == 1) {
+							int check = JOptionPane.showConfirmDialog(null, "안 읽은 편지가 있습니다.\n확인하시겠습니까?", "편지 알림", JOptionPane.YES_NO_OPTION);
+							if(check != JOptionPane.YES_OPTION) {
+								return;
+							} else if(check == JOptionPane.YES_OPTION){
+								LetterDialog letterDialog = new LetterDialog(owner, "편지함");
+								letterDialog.setVisible(true);
+							}
+						}
 					}
 					
 					DB_Closer.close(conn);
@@ -602,6 +597,41 @@ public class Home extends JFrame {
 				}
 			});
 			
+			this.member_ChangePw.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					MemChangePw memChangePw = new MemChangePw(owner, "비밀번호 변경");
+					memChangePw.setVisible(true);
+					
+					if(!memChangePw.check()) return;
+					
+					String beforePw = memChangePw.getBeforePwField();
+					String afterPw = memChangePw.getAfterPwField();
+					
+					Connection conn = GenerateConnection.getConnection();
+					DAO dao = DAO.getInstance();
+					
+					MemberDTO dto = dao.getMemberInfo(conn, getSession_idx());
+					int re1 = dao.mLogin(conn, dto.getId(), beforePw);
+					if(re1 == 0) {
+						JOptionPane.showMessageDialog(null, "현재 비밀번호를 확인해주세요.", "비밀번호 변경", JOptionPane.WARNING_MESSAGE);
+					} else if(re1 != 0 && (beforePw.equals(afterPw))){
+						JOptionPane.showMessageDialog(null, "현재 비밀번호와 같은 비밀번호로는 변경할 수 없습니다.\n다른 비밀번호를 사욯해주세요.", "비밀번호 변경", JOptionPane.WARNING_MESSAGE);
+					} else {
+						int re2 = dao.mChangePw(conn, getSession_idx(), afterPw);
+						if(re2 == 0) {
+							JOptionPane.showMessageDialog(null, "비밀번호 변경 실패\n계속 반복될 경우 관리자에게 문의하세요.", "비밀번호 변경", JOptionPane.WARNING_MESSAGE);
+						} else {
+							JOptionPane.showMessageDialog(null, "비밀번호 변경 완료\n다시 로그인해주세요.", "비밀번호 변경", JOptionPane.INFORMATION_MESSAGE);
+							logout();
+						}
+					}
+					
+					DB_Closer.close(conn);
+				}
+			});
+			
 			this.admin_Login.addActionListener(new ActionListener() {
 				
 				@Override
@@ -649,7 +679,7 @@ public class Home extends JFrame {
 					String targetImgFilePath = bookAddDialog.getTargetImgFilePath();
 					
 					
-					if(!targetImgFilePath.trim().equals("")) {
+					if(targetImgFilePath.trim().length() != 0) {
 						imgName = title + targetImgFilePath.substring(targetImgFilePath.length()-4);
 					}
 					
@@ -657,13 +687,11 @@ public class Home extends JFrame {
 					DAO dao = DAO.getInstance();
 					
 					int re = dao.bAdd(conn, title, author, publisher, imgName, targetImgFilePath);
-					
 					if(re == 0) {
 						JOptionPane.showMessageDialog(null, "책 등록 실패", "책 등록", JOptionPane.WARNING_MESSAGE);
 					} else {
 						JOptionPane.showMessageDialog(null, "책 등록 완료", "책 등록", JOptionPane.INFORMATION_MESSAGE);
 					}
-					
 					DB_Closer.close(conn);
 					
 					refreshTable();
@@ -679,8 +707,29 @@ public class Home extends JFrame {
 					
 					if(!bookModiDialog.check()) return;
 					
+					int b_idx = bookModiDialog.getB_idx();
+					String title = bookModiDialog.getTitleField();
+					String author = bookModiDialog.getAuthorField();
+					String publisher = bookModiDialog.getPublisherField();
+					String imgName = "";
+					String targetImgFilePath = bookModiDialog.getTargetImgFilePath();
 					
+					if(targetImgFilePath.trim().length() != 0) {
+						imgName = title + targetImgFilePath.substring(targetImgFilePath.length()-4);
+					}
 					
+					Connection conn = GenerateConnection.getConnection();
+					DAO dao = DAO.getInstance();
+					
+					int re = dao.bModify(conn, b_idx, title, author, publisher, imgName, targetImgFilePath);
+					if(re == 0) {
+						JOptionPane.showMessageDialog(null, "책 수정 실패", "책 수정", JOptionPane.WARNING_MESSAGE);
+					} else {
+						JOptionPane.showMessageDialog(null, "책 수정 완료", "책 수정", JOptionPane.INFORMATION_MESSAGE);
+					}
+					DB_Closer.close(conn);
+					
+					refreshTable();
 				}
 			});
 			
@@ -830,15 +879,15 @@ public class Home extends JFrame {
 					BookSearchDialog bookSearchDialog = new BookSearchDialog(owner, "책 검색");
 					bookSearchDialog.setVisible(true);
 					
+					Connection conn = GenerateConnection.getConnection();
+					DAO dao = DAO.getInstance();
+					
 					String title;
 					if(bookSearchDialog.check() == 0) {
 						return;
 					} else if(bookSearchDialog.check() == 1) { // 대여
 						int check = JOptionPane.showConfirmDialog(null, "이 책을 대여하시겠습니까?", "책 대여", JOptionPane.YES_NO_OPTION);
 						if(check != JOptionPane.YES_OPTION) return;
-						
-						Connection conn = GenerateConnection.getConnection();
-						DAO dao = DAO.getInstance();
 
 						title = bookSearchDialog.getTitleField().getText().trim();
 						int b_idx = dao.getBookIdx_FromTitle(conn, title);
@@ -854,16 +903,9 @@ public class Home extends JFrame {
 							JOptionPane.showMessageDialog(null, "책 대여 완료", "책 대여", JOptionPane.INFORMATION_MESSAGE);
 						}
 						
-						DB_Closer.close(conn);
-						
-						refreshTable();
-						
 					} else if(bookSearchDialog.check() == 2) { // 예약
 						int check = JOptionPane.showConfirmDialog(null, "이 책을 예약하시겠습니까?", "책 예약", JOptionPane.YES_NO_OPTION);
 						if(check != JOptionPane.YES_OPTION) return;
-						
-						Connection conn = GenerateConnection.getConnection();
-						DAO dao = DAO.getInstance();
 						
 						title = bookSearchDialog.getTitleField().getText().trim();
 						int b_idx = dao.getBookIdx_FromTitle(conn, title);
@@ -875,10 +917,10 @@ public class Home extends JFrame {
 							JOptionPane.showMessageDialog(null, "책 예약 완료", "책 예약", JOptionPane.INFORMATION_MESSAGE);
 						}
 						
-						DB_Closer.close(conn);
-						
-						refreshTable();
 					}
+					refreshTable();
+					
+					DB_Closer.close(conn);
 				}
 			});
 			
@@ -891,48 +933,17 @@ public class Home extends JFrame {
 				}
 			});
 			
-			this.messageBtn.addActionListener(new ActionListener() {
+			this.LetterBtn.addActionListener(new ActionListener() {
 				
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					JOptionPane.showMessageDialog(null, "준비중입니다.", "쪽지함", JOptionPane.INFORMATION_MESSAGE);
+//					JOptionPane.showMessageDialog(null, "준비중입니다.", "편지함", JOptionPane.INFORMATION_MESSAGE);
+					LetterDialog letterDialog = new LetterDialog(owner, "편지함");
+					letterDialog.setVisible(true);
 				}
 			});
 			
-			this.member_ChangePw.addActionListener(new ActionListener() {
-				
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					MemChangePw memChangePw = new MemChangePw(owner, "비밀번호 변경");
-					memChangePw.setVisible(true);
-					
-					if(!memChangePw.check()) return;
-					
-					Connection conn = GenerateConnection.getConnection();
-					DAO dao = DAO.getInstance();
-					
-					String beforePw = memChangePw.getBeforePwField();
-					String afterPw = memChangePw.getAfterPwField();
-					
-					MemberDTO dto = dao.getMemberInfo(conn, getSession_idx());
-					int re1 = dao.mLogin(conn, dto.getId(), beforePw);
-					if(re1 == 0) {
-						JOptionPane.showMessageDialog(null, "현재 비밀번호를 확인해주세요.", "비밀번호 변경", JOptionPane.WARNING_MESSAGE);
-					} else if(re1 != 0 && (beforePw.equals(afterPw))){
-						JOptionPane.showMessageDialog(null, "현재 비밀번호와 같은 비밀번호로는 변경할 수 없습니다.\n다른 비밀번호를 사욯해주세요.", "비밀번호 변경", JOptionPane.WARNING_MESSAGE);
-					} else {
-						int re2 = dao.mChangePw(conn, getSession_idx(), afterPw);
-						if(re2 == 0) {
-							JOptionPane.showMessageDialog(null, "비밀번호 변경 실패\n계속 반복될 경우 관리자에게 문의하세요.", "비밀번호 변경", JOptionPane.WARNING_MESSAGE);
-						} else {
-							JOptionPane.showMessageDialog(null, "비밀번호 변경 완료\n다시 로그인해주세요.", "비밀번호 변경", JOptionPane.INFORMATION_MESSAGE);
-							logout();
-						}
-					}
-					
-					DB_Closer.close(conn);
-				}
-			});
+			
 		}
 		
 		public void controlBtn() {
@@ -955,7 +966,7 @@ public class Home extends JFrame {
 			
 			this.bookSearchBtn.setEnabled(true);
 			this.bookSearchBtn2.setEnabled(true);
-			this.messageBtn.setEnabled(true);
+			this.LetterBtn.setEnabled(true);
 //			this.bookRentalBtn.setEnabled(true);
 //			this.bookReserveBtn.setEnabled(true);
 			
@@ -976,7 +987,7 @@ public class Home extends JFrame {
 			
 			this.bookSearchBtn.setEnabled(false);
 			this.bookSearchBtn2.setEnabled(false);
-			this.messageBtn.setEnabled(false);
+			this.LetterBtn.setEnabled(false);
 			this.bookRentalBtn.setEnabled(false);
 			this.bookReserveBtn.setEnabled(false);
 			

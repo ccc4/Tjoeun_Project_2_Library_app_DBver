@@ -57,47 +57,47 @@ private boolean value = false;
 		
 		add(idLabel = new JLabel("아이디"));
 //		idLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-		idLabel.setBounds(10, 10, 80, 30);
+		idLabel.setBounds(10, 0, 80, 30);
 		add(idField = new JTextField());
-		idField.setBounds(95, 10, 100, 30);
+		idField.setBounds(95, 0, 100, 30);
 		add(checkIdBtn = new JButton("확인"));
-		checkIdBtn.setBounds(200, 10, 60, 30);
+		checkIdBtn.setBounds(200, 0, 60, 30);
 		
 		add(pwLabel = new JLabel("비밀번호"));
 //		pwLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-		pwLabel.setBounds(10, 40, 80, 30);
+		pwLabel.setBounds(10, 30, 80, 30);
 		add(pwField = new JPasswordField());
-		pwField.setBounds(95, 40, 165, 30);
+		pwField.setBounds(95, 30, 165, 30);
 		
 		add(pw2Label = new JLabel("비밀번호확인"));
 //		pw2Label.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-		pw2Label.setBounds(10, 70, 80, 30);
+		pw2Label.setBounds(10, 60, 80, 30);
 		add(pw2Field = new JPasswordField());
-		pw2Field.setBounds(95, 70, 165, 30);
+		pw2Field.setBounds(95, 60, 165, 30);
 		
 		add(nicknameLabel = new JLabel("별명"));
 //		nicknameLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-		nicknameLabel.setBounds(10, 100, 80, 30);
+		nicknameLabel.setBounds(10, 90, 80, 30);
 		add(nicknameField = new JTextField());
-		nicknameField.setBounds(95, 100, 100, 30);
+		nicknameField.setBounds(95, 90, 100, 30);
 		add(checkNicknameBtn = new JButton("확인"));
-		checkNicknameBtn.setBounds(200, 100, 60, 30);
+		checkNicknameBtn.setBounds(200, 90, 60, 30);
 		
 		add(nameLabel = new JLabel("이름"));
 //		nameLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-		nameLabel.setBounds(10, 130, 80, 30);
+		nameLabel.setBounds(10, 120, 80, 30);
 		add(nameField = new JTextField());
-		nameField.setBounds(95, 130, 100, 30);
+		nameField.setBounds(95, 120, 100, 30);
 		
 		add(ageLabel = new JLabel("나이"));
 //		ageLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-		ageLabel.setBounds(10, 160, 80, 30);
+		ageLabel.setBounds(10, 150, 80, 30);
 		add(ageField = new JTextField());
-		ageField.setBounds(95, 160, 100, 30);
+		ageField.setBounds(95, 150, 100, 30);
 		
 		add(genderLabel = new JLabel("성별"));
 //		genderLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-		genderLabel.setBounds(10, 190, 80, 30);
+		genderLabel.setBounds(10, 180, 80, 30);
 		add(genderPanel = new JPanel());
 		maleBtn.setActionCommand("M");
 		femaleBtn.setActionCommand("F");
@@ -105,38 +105,38 @@ private boolean value = false;
 		bg.add(femaleBtn);
 		genderPanel.add(maleBtn);
 		genderPanel.add(femaleBtn);
-		genderPanel.setBounds(95, 190, 120, 30);
+		genderPanel.setBounds(95, 180, 120, 30);
 		
 		add(telLabel = new JLabel("전화번호"));
 //		telLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-		telLabel.setBounds(10, 220, 80, 30);
+		telLabel.setBounds(10, 210, 80, 30);
 		add(telField = new JTextField());
-		telField.setBounds(95, 220, 165, 30);
+		telField.setBounds(95, 210, 165, 30);
 		
 		add(emailLabel = new JLabel("이메일"));
 //		emailLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-		emailLabel.setBounds(10, 250, 80, 30);
+		emailLabel.setBounds(10, 240, 80, 30);
 		add(emailField_1 = new JTextField());
-		emailField_1.setBounds(95, 250, 100, 30);
+		emailField_1.setBounds(95, 240, 100, 30);
 		add(email_golbeng = new JLabel("@"));
-		email_golbeng.setBounds(200, 250, 20, 30);
+		email_golbeng.setBounds(200, 240, 20, 30);
 		add(emailField_2 = new JComboBox<>(domeins));
-		emailField_2.setBounds(95, 280, 165, 30);
+		emailField_2.setBounds(95, 270, 165, 30);
 		
 		add(addressLabel = new JLabel("주소"));
 //		addressLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-		addressLabel.setBounds(10, 310, 80, 30);
+		addressLabel.setBounds(10, 300, 80, 30);
 		add(addressPane);
-		addressPane.setBounds(95, 310, 165, 50);
+		addressPane.setBounds(95, 300, 165, 50);
 		
 		add(joinBtn = new JButton("가입"));
-		joinBtn.setBounds(135, 370, 60, 30);
+		joinBtn.setBounds(135, 360, 60, 30);
 		add(exitBtn = new JButton("취소"));
-		exitBtn.setBounds(200, 370, 60, 30);
+		exitBtn.setBounds(200, 360, 60, 30);
 		
 		
 		
-		setSize(285, 445);
+		setSize(280, 425);
 		setLocationRelativeTo(null);
 		setResizable(false);
 		
