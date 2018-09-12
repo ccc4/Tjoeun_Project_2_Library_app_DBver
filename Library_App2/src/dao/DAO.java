@@ -990,7 +990,7 @@ public class DAO {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		
-		String sql = "SELECT * FROM letter_view WHERE l_receiver_idx = ? AND l_readDate IS NULL";
+		String sql = "SELECT count(*) FROM letter_view WHERE l_receiver_idx = ? AND l_readDate IS NULL";
 		
 		try {
 			pstmt = conn.prepareStatement(sql);
@@ -998,7 +998,7 @@ public class DAO {
 			rs = pstmt.executeQuery();
 			
 			if(rs.next()) {
-				re = 1;
+				re = rs.getInt("count(*)");
 			} else {
 				re = 0;
 			}
@@ -1013,22 +1013,32 @@ public class DAO {
 		return re;
 	}
 	
-	public void lReadLetter(Connection conn, int session_idx) {
+	public int lReadLetter(Connection conn, int l_idx) {
+		
+		int re = 0;
 		
 		PreparedStatement pstmt = null;
 		
-		String sql = "";
+		String sql = "UPDATE letter SET l_readDate = now() WHERE l_idx = ?";
 		
 		try {
 			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, l_idx);
 			
+			int check = pstmt.executeUpdate();
 			
-			
+			if(check == 1) {
+				re = 1;
+			} else {
+				re = 0;
+			}
 			
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			DB_Closer.close(pstmt);
 		}
+		
+		return re;
 	}
 }

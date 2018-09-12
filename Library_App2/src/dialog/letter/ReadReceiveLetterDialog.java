@@ -77,8 +77,8 @@ public class ReadReceiveLetterDialog extends JDialog{
 	}
 
 
-	public void setSendDateField(Timestamp date) {
-		this.sendDateField.setText(String.valueOf(date));
+	public void setSendDateField(String string) {
+		this.sendDateField.setText(string);
 	}
 
 

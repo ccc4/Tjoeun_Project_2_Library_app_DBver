@@ -536,8 +536,8 @@ public class Home extends JFrame {
 						
 						// 로그인할 때 안 읽은 메시지가 있는 경우 팝업
 						int re2 = dao.checkLetter(conn, getSession_idx());
-						if(re2 == 1) {
-							int check = JOptionPane.showConfirmDialog(null, "안 읽은 편지가 있습니다.\n확인하시겠습니까?", "편지 알림", JOptionPane.YES_NO_OPTION);
+						if(re2 != 0) {
+							int check = JOptionPane.showConfirmDialog(null, "안 읽은 편지가 " + re2 + " 통 있습니다.\n확인하시겠습니까?", "편지 알림", JOptionPane.YES_NO_OPTION);
 							if(check != JOptionPane.YES_OPTION) {
 								return;
 							} else if(check == JOptionPane.YES_OPTION){

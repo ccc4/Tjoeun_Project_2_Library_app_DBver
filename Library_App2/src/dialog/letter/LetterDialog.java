@@ -32,7 +32,8 @@ import frame.Home;
 
 public class LetterDialog extends JDialog {
 
-	LetterDialog owner = this;
+	private LetterDialog owner = this;
+	Home frame;
 	
 	ArrayList<LetterDTO> receiveLetters = new ArrayList<>();
 	ArrayList<LetterDTO> sendLetters = new ArrayList<>();
@@ -63,10 +64,11 @@ public class LetterDialog extends JDialog {
 	
 	public LetterDialog(Home frame, String title) {
 		super(frame, title, true);
+		this.frame = frame;
 		
-		pane.addTab("받은 편지", receivePanel = new ReceivePanel(frame));
-		pane.addTab("보낸 편지", sentPanel = new SentPanel(frame));
-		pane.addTab("편지 쓰기", sendPanel = new SendPanel(frame));
+		pane.addTab("받은 편지", receivePanel = new ReceivePanel());
+		pane.addTab("보낸 편지", sentPanel = new SentPanel());
+		pane.addTab("편지 쓰기", sendPanel = new SendPanel());
 		
 		getContentPane().setLayout(new BorderLayout());
 		getContentPane().add(pane, BorderLayout.CENTER);
@@ -75,13 +77,13 @@ public class LetterDialog extends JDialog {
 //		this.setResizable(false);
 		this.setLocationRelativeTo(null);
 		
-		refreshLetterList(frame);
+		refreshLetterList();
 	}
 	
 	class ReceivePanel extends JPanel{
 		JButton sendBtn;
 		JPanel btnPanel;
-		public ReceivePanel(Home frame) {
+		public ReceivePanel() {
 			
 			add(receiveScrollPane);
 			
@@ -93,13 +95,13 @@ public class LetterDialog extends JDialog {
 			receiveTable.getTableHeader().setReorderingAllowed(false);
 			receiveTable.getTableHeader().setResizingAllowed(false);
 			
-			refreshLetterList(frame);
+			refreshLetterList();
 		}
 	}
 	class SentPanel extends JPanel{
 		JButton sendBtn;
 		JPanel btnPanel;
-		public SentPanel(Home frame) {
+		public SentPanel() {
 			
 			add(sentScrollPane, BorderLayout.CENTER);
 			
@@ -110,16 +112,16 @@ public class LetterDialog extends JDialog {
 			sentTable.getTableHeader().setReorderingAllowed(false);
 			sentTable.getTableHeader().setResizingAllowed(false);
 			
-			refreshLetterList(frame);
+			refreshLetterList();
 		}
 	}
 	
-	public void refreshLetterList(Home frame) {
-		getReceiveLetterList(frame);
-		getSentLetterList(frame);
+	public void refreshLetterList() {
+		getReceiveLetterList();
+		getSentLetterList();
 	}
 	
-	public void getReceiveLetterList(Home frame) {
+	public void getReceiveLetterList() {
 		receiveModel.setNumRows(0);
 		
 		Connection conn = GenerateConnection.getConnection();
@@ -149,7 +151,7 @@ public class LetterDialog extends JDialog {
 		DB_Closer.close(conn);
 	}
 	
-	public void getSentLetterList(Home frame) {
+	public void getSentLetterList() {
 		sentModel.setNumRows(0);
 		
 		Connection conn = GenerateConnection.getConnection();
@@ -182,16 +184,13 @@ public class LetterDialog extends JDialog {
 	
 	class SendPanel extends JPanel{
 		
-		Home frame;
-		
 		JLabel receiverLabel, titleLabel, contentsLabel;
 		JTextField receiverField, titleField;
 		JTextArea contentsField;
 		JScrollPane contentsPanel;
 		JButton findMemBtn, sendBtn;
 		
-		public SendPanel(Home frame) {
-			this.frame = frame;
+		public SendPanel() {
 			
 			this.setLayout(null);
 			//480 350
@@ -265,6 +264,7 @@ public class LetterDialog extends JDialog {
 					DAO dao = DAO.getInstance();
 					
 					int receiverIdx = dao.getMemberIdx_FromNickname(conn, receiverNickname);
+					
 					if(receiverIdx == 0) {
 						JOptionPane.showMessageDialog(null, "보낼 대상을 정확히 기재해주세요.", "편지 보내기", JOptionPane.WARNING_MESSAGE);
 						return;
@@ -280,7 +280,7 @@ public class LetterDialog extends JDialog {
 					}
 					DB_Closer.close(conn);
 					
-					refreshLetterList(frame);
+					refreshLetterList();
 				}
 			});
 		}
@@ -318,15 +318,26 @@ public class LetterDialog extends JDialog {
 				ReadReceiveLetterDialog readReceiveLetterDialog = new ReadReceiveLetterDialog(owner, "받은 편지");
 				
 				int l_idx = Integer.parseInt((String) receiveTable.getModel().getValueAt(receiveTable.getSelectedRow(), 0)) -1;
-				System.out.println(l_idx);
 				
 				LetterDTO dto = receiveLetters.get(l_idx);
 				
-				readReceiveLetterDialog.setSenderField(dto.getSenderNickname());
-				readReceiveLetterDialog.setSendDateField(dto.getSendDate());
+				readReceiveLetterDialog.setSenderField(dto.getListNickname());
+				SimpleDateFormat dateFormat = new SimpleDateFormat("yy-MM-dd / hh:mm:ss");
+				readReceiveLetterDialog.setSendDateField(dateFormat.format(dto.getSendDate()));
 				readReceiveLetterDialog.setTitleField(dto.getTitle());
 				readReceiveLetterDialog.setContentsField(dto.getContents());
 				
+				if(dto.getReadDate() == null) {
+					Connection conn = GenerateConnection.getConnection();
+					DAO dao = DAO.getInstance();
+					
+					int re = dao.lReadLetter(conn, dto.getL_idx());
+					if(re == 0) JOptionPane.showMessageDialog(null, "문제발생", "편지 읽기", JOptionPane.WARNING_MESSAGE);
+					
+					DB_Closer.close(conn);
+					
+					refreshLetterList();
+				}
 				readReceiveLetterDialog.setVisible(true);
 			}
 		}
