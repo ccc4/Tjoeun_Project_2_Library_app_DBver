@@ -188,4 +188,16 @@ public class BookSearchDialog extends JDialog {
 		this.titleField = titleField;
 	}
 
+	public JTextField getSearchField() {
+		return searchField;
+	}
+
+	public void setSearchField(String str) {
+		this.searchField.setText(str);
+	}
+
+	public JButton getSearchBtn() {
+		return searchBtn;
+	}
+	
 }

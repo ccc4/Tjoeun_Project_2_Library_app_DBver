@@ -16,8 +16,9 @@ public class MemberDTO {
 	private String address;
 	private Timestamp joinDate;
 	
-	public MemberDTO(String id, String pw, String nickname, String name, int age, String gender, int tel, String email_1,
+	public MemberDTO(int idx, String id, String pw, String nickname, String name, int age, String gender, int tel, String email_1,
 			String email_2, String address, Timestamp joinDate) {
+		this.idx = idx;
 		this.id = id;
 		this.pw = pw;
 		this.nickname = nickname;

@@ -213,6 +213,7 @@ public class DAO {
 			rs = pstmt.executeQuery();
 
 			if (rs.next()) {
+				int idx = rs.getInt("m_idx");
 				String id = rs.getString("m_id");
 				String pw = rs.getString("m_pw");
 				String nickname = rs.getString("m_nickname");
@@ -225,7 +226,7 @@ public class DAO {
 				String address = rs.getString("m_address");
 				Timestamp joinDate = rs.getTimestamp("m_joinDate");
 
-				dto = new MemberDTO(id, pw, nickname, name, age, gender, tel, email_1, email_2, address, joinDate);
+				dto = new MemberDTO(idx, id, pw, nickname, name, age, gender, tel, email_1, email_2, address, joinDate);
 			}
 
 		} catch (Exception e) {
@@ -528,7 +529,9 @@ public class DAO {
 	
 	
 	
-	public void bRental_AtReservation(Connection conn, int member_idx, int book_idx) {
+	public int bRental_AtReservation(Connection conn, int member_idx, int book_idx) {
+		
+		int re = 0;
 		
 		PreparedStatement pstmt = null;
 		
@@ -541,11 +544,18 @@ public class DAO {
 			
 			int check = pstmt.executeUpdate();
 			
+			if(check == 0) {
+				re = 0;
+			} else {
+				re = 1;
+			}
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			DB_Closer.close(pstmt);
 		}
+		return re;
 	}
 
 	public int bRental(Connection conn, int member_idx, int book_idx) {
@@ -794,6 +804,75 @@ public class DAO {
 		
 		return re;
 	}
+	
+	public int mDelete(Connection conn, int session_idx) {
+		
+		int re = 0;
+		
+		PreparedStatement pstmt = null;
+		
+		String sql = "DELETE FROM member WHERE m_idx = ?";
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, session_idx);
+			
+			int check = pstmt.executeUpdate();
+			
+			if(check == 0) {
+				re = 0;
+			} else {
+				re = 1;
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DB_Closer.close(pstmt);
+		}
+		
+		return re;
+	}
+	
+	public int mDeleteAddToList(Connection conn, int idx, String id, String pw, String nickname, String name, int age, String gender, int tel, String email_1, String email_2, String address, Timestamp joinDate) {
+		
+		int re = 0;
+		
+		PreparedStatement pstmt = null;
+		
+		String sql = "INSERT INTO deleted_member (m_idx, m_id, m_pw, m_nickname, m_name, m_age, m_gender, m_tel, m_email_1, m_email_2, m_address, m_joinDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, idx);
+			pstmt.setString(2, id);
+			pstmt.setString(3, pw);
+			pstmt.setString(4, nickname);
+			pstmt.setString(5, name);
+			pstmt.setInt(6, age);
+			pstmt.setString(7, gender);
+			pstmt.setInt(8, tel);
+			pstmt.setString(9, email_1);
+			pstmt.setString(10, email_2);
+			pstmt.setString(11, address);
+			pstmt.setTimestamp(12, joinDate);
+			
+			int check = pstmt.executeUpdate();
+			
+			if(check == 0) {
+				re = 0;
+			} else {
+				re = 1;
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DB_Closer.close(pstmt);
+		}
+		
+		return re;
+	}
 
 	public int bModify(Connection conn, int b_idx, String title, String author, String publisher, String imgName,
 			String targetImgFilePath) {
@@ -915,7 +994,7 @@ public class DAO {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		
-		String sql = "SELECT * FROM letter_view WHERE l_receiver_idx = ? ORDER BY l_sendDate DESC";
+		String sql = "SELECT * FROM letter_view WHERE l_receiver_idx = ? AND l_receiver_deleted = 'N' ORDER BY l_sendDate DESC";
 		
 		try {
 			pstmt = conn.prepareStatement(sql);
@@ -930,7 +1009,7 @@ public class DAO {
 				Timestamp sendDate = rs.getTimestamp("l_sendDate");
 				Timestamp readDate = rs.getTimestamp("l_readDate");
 				
-				dto = new LetterDTO(idx, title, contents, senderNickname, sendDate, readDate);
+				dto = new LetterDTO(idx, title, contents, senderNickname, null, sendDate, readDate);
 				dtos.add(dto);
 			}
 			
@@ -953,7 +1032,7 @@ public class DAO {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		
-		String sql = "SELECT * FROM letter_view WHERE l_sender_idx = ? ORDER BY l_sendDate DESC";
+		String sql = "SELECT * FROM letter_view WHERE l_sender_idx = ? AND l_sender_deleted = 'N' ORDER BY l_sendDate DESC";
 		
 		try {
 			pstmt = conn.prepareStatement(sql);
@@ -968,7 +1047,7 @@ public class DAO {
 				Timestamp sendDate = rs.getTimestamp("l_sendDate");
 				Timestamp readDate = rs.getTimestamp("l_readDate");
 				
-				dto = new LetterDTO(idx, title, contents, receiverNickname, sendDate, readDate);
+				dto = new LetterDTO(idx, title, contents, null, receiverNickname, sendDate, readDate);
 				dtos.add(dto);
 			}
 			
@@ -990,7 +1069,7 @@ public class DAO {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		
-		String sql = "SELECT count(*) FROM letter_view WHERE l_receiver_idx = ? AND l_readDate IS NULL";
+		String sql = "SELECT count(*) FROM letter_view WHERE l_receiver_idx = ? AND l_readDate IS NULL AND l_receiver_deleted = 'N'";
 		
 		try {
 			pstmt = conn.prepareStatement(sql);
@@ -1013,7 +1092,7 @@ public class DAO {
 		return re;
 	}
 	
-	public int lReadLetter(Connection conn, int l_idx) {
+	public int lRead(Connection conn, int l_idx) {
 		
 		int re = 0;
 		
@@ -1027,10 +1106,10 @@ public class DAO {
 			
 			int check = pstmt.executeUpdate();
 			
-			if(check == 1) {
-				re = 1;
-			} else {
+			if(check == 0) {
 				re = 0;
+			} else {
+				re = 1;
 			}
 			
 		} catch (Exception e) {
@@ -1040,5 +1119,93 @@ public class DAO {
 		}
 		
 		return re;
+	}
+	
+	public int lDeleteReceived(Connection conn, int l_idx) {
+		
+		int re = 0;
+		
+		PreparedStatement pstmt = null;
+		
+		String sql = "UPDATE letter SET l_receiver_deleted = 'Y' WHERE l_idx = ?";
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, l_idx);
+			
+			int check = pstmt.executeUpdate();
+			
+			if(check == 0) {
+				re = 0;
+			} else {
+				re = 1;
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DB_Closer.close(pstmt);
+		}
+		
+		return re;
+	}
+	
+	public int lDeleteSent(Connection conn, int l_idx) {
+		
+		int re = 0;
+		
+		PreparedStatement pstmt = null;
+		
+		String sql = "UPDATE letter SET l_sender_deleted = 'Y' WHERE l_idx = ?";
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, l_idx);
+			
+			int check = pstmt.executeUpdate();
+			
+			if(check == 0) {
+				re = 0;
+			} else {
+				re = 1;
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DB_Closer.close(pstmt);
+		}
+		
+		return re;
+	}
+	
+	public Vector<String> mGetNicknames(Connection conn) {
+
+		Vector<String> nicknames = new Vector<>();
+//		ArrayList<String> nicknames = new ArrayList<>();
+		
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		
+		String sql = "SELECT m_nickname FROM member";
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			rs = pstmt.executeQuery();
+			
+			while(rs.next()) {
+				String nickname = rs.getString("m_nickname");
+				
+				nicknames.add(nickname);
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DB_Closer.close(rs);
+			DB_Closer.close(pstmt);
+		}
+		
+		return nicknames;
 	}
 }

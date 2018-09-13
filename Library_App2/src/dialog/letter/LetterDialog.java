@@ -2,11 +2,13 @@ package dialog.letter;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.sql.Connection;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -14,6 +16,7 @@ import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -36,7 +39,7 @@ public class LetterDialog extends JDialog {
 	Home frame;
 	
 	ArrayList<LetterDTO> receiveLetters = new ArrayList<>();
-	ArrayList<LetterDTO> sendLetters = new ArrayList<>();
+	ArrayList<LetterDTO> sentLetters = new ArrayList<>();
 	
 	JTabbedPane pane = new JTabbedPane(JTabbedPane.TOP);
 	ReceivePanel receivePanel;
@@ -85,6 +88,7 @@ public class LetterDialog extends JDialog {
 		JPanel btnPanel;
 		public ReceivePanel() {
 			
+			receiveScrollPane.setPreferredSize(new Dimension(460, 280));
 			add(receiveScrollPane);
 			
 			receiveTable.addMouseListener(new ReadReceiveLetter());
@@ -94,8 +98,6 @@ public class LetterDialog extends JDialog {
 			receiveTable.getColumn("상태").setPreferredWidth(50);
 			receiveTable.getTableHeader().setReorderingAllowed(false);
 			receiveTable.getTableHeader().setResizingAllowed(false);
-			
-			refreshLetterList();
 		}
 	}
 	class SentPanel extends JPanel{
@@ -103,16 +105,16 @@ public class LetterDialog extends JDialog {
 		JPanel btnPanel;
 		public SentPanel() {
 			
-			add(sentScrollPane, BorderLayout.CENTER);
+			sentScrollPane.setPreferredSize(new Dimension(460, 280));
+			add(sentScrollPane);
 			
+			sentTable.addMouseListener(new ReadSentLetter());
 			sentTable.getColumn("번호").setPreferredWidth(40);
 			sentTable.getColumn("제목").setPreferredWidth(170);
 			sentTable.getColumn("받는이").setPreferredWidth(50);
 			sentTable.getColumn("상태").setPreferredWidth(50);
 			sentTable.getTableHeader().setReorderingAllowed(false);
 			sentTable.getTableHeader().setResizingAllowed(false);
-			
-			refreshLetterList();
 		}
 	}
 	
@@ -134,8 +136,7 @@ public class LetterDialog extends JDialog {
 			String[] letter = new String[5];
 			letter[0] = String.valueOf(i+1);
 			letter[1] = receiveLetters.get(i).getTitle();
-			letter[2] = receiveLetters.get(i).getListNickname();
-			
+			letter[2] = receiveLetters.get(i).getSenderNickname();
 			SimpleDateFormat dateFormat = new SimpleDateFormat("yy-MM-dd");
 			letter[3] = dateFormat.format(receiveLetters.get(i).getSendDate());
 			
@@ -157,19 +158,19 @@ public class LetterDialog extends JDialog {
 		Connection conn = GenerateConnection.getConnection();
 		DAO dao = DAO.getInstance();
 		
-		sendLetters = dao.getMySendLetterList(conn, frame.getSession_idx());
+		sentLetters = dao.getMySendLetterList(conn, frame.getSession_idx());
 		
-		for(int i=0;i<sendLetters.size();i++) {
+		for(int i=0;i<sentLetters.size();i++) {
 			
 			String[] letter = new String[5];
 			letter[0] = String.valueOf(i+1);
-			letter[1] = sendLetters.get(i).getTitle();
-			letter[2] = sendLetters.get(i).getListNickname();
+			letter[1] = sentLetters.get(i).getTitle();
+			letter[2] = sentLetters.get(i).getReceiverNickname();
 			
 			SimpleDateFormat dateFormat = new SimpleDateFormat("yy-MM-dd");
-			letter[3] = dateFormat.format(sendLetters.get(i).getSendDate());
+			letter[3] = dateFormat.format(sentLetters.get(i).getSendDate());
 			
-			if(sendLetters.get(i).getReadDate() == null) {
+			if(sentLetters.get(i).getReadDate() == null) {
 				letter[4] = "안읽음";
 			} else {
 				letter[4] = "읽음";
@@ -229,7 +230,12 @@ public class LetterDialog extends JDialog {
 				
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					JOptionPane.showMessageDialog(null, "준비중입니다.", "편지 보내기", JOptionPane.INFORMATION_MESSAGE);
+					LetterFindNicknameDialog letterFindNicknameDialog = new LetterFindNicknameDialog(owner, "닉네임 찾기");
+					letterFindNicknameDialog.setVisible(true);
+					
+					if(!letterFindNicknameDialog.check()) return;
+					
+					
 				}
 			});
 			
@@ -321,9 +327,10 @@ public class LetterDialog extends JDialog {
 				
 				LetterDTO dto = receiveLetters.get(l_idx);
 				
-				readReceiveLetterDialog.setSenderField(dto.getListNickname());
+				readReceiveLetterDialog.setL_idx(dto.getL_idx());
+				readReceiveLetterDialog.setSenderField(dto.getSenderNickname());
 				SimpleDateFormat dateFormat = new SimpleDateFormat("yy-MM-dd / hh:mm:ss");
-				readReceiveLetterDialog.setSendDateField(dateFormat.format(dto.getSendDate()));
+				readReceiveLetterDialog.setReceiveDateField(dateFormat.format(dto.getSendDate()));
 				readReceiveLetterDialog.setTitleField(dto.getTitle());
 				readReceiveLetterDialog.setContentsField(dto.getContents());
 				
@@ -331,7 +338,7 @@ public class LetterDialog extends JDialog {
 					Connection conn = GenerateConnection.getConnection();
 					DAO dao = DAO.getInstance();
 					
-					int re = dao.lReadLetter(conn, dto.getL_idx());
+					int re = dao.lRead(conn, dto.getL_idx());
 					if(re == 0) JOptionPane.showMessageDialog(null, "문제발생", "편지 읽기", JOptionPane.WARNING_MESSAGE);
 					
 					DB_Closer.close(conn);
@@ -339,6 +346,28 @@ public class LetterDialog extends JDialog {
 					refreshLetterList();
 				}
 				readReceiveLetterDialog.setVisible(true);
+			}
+		}
+	}
+	
+	class ReadSentLetter extends MouseAdapter{
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			if(e.getClickCount() == 2) {
+				ReadSentLetterDialog readSendLetterDialog = new ReadSentLetterDialog(owner, "보낸 편지");
+				
+				int l_idx = Integer.parseInt((String) sentTable.getModel().getValueAt(sentTable.getSelectedRow(), 0)) -1;
+				
+				LetterDTO dto = sentLetters.get(l_idx);
+				
+				readSendLetterDialog.setL_idx(dto.getL_idx());
+				readSendLetterDialog.setReceiverField(dto.getReceiverNickname());
+				SimpleDateFormat dateFormat = new SimpleDateFormat("yy-MM-dd / hh:mm:ss");
+				readSendLetterDialog.setSendDateField(dateFormat.format(dto.getSendDate()));
+				readSendLetterDialog.setTitleField(dto.getTitle());
+				readSendLetterDialog.setContentsField(dto.getContents());
+				
+				readSendLetterDialog.setVisible(true);
 			}
 		}
 	}

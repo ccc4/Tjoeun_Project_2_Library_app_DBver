@@ -14,10 +14,10 @@ public class LetterDTO {
 	Timestamp sendDate;
 	Timestamp readDate;
 	
-	String listNickname; // 받은, 보낸 편지함에서 나타낼 상대 닉네임
-	
-	public LetterDTO(String title, String contents, int senderIdx, String senderNickname, int receiverIdx,
+	public LetterDTO(int l_idx, String title, String contents, int senderIdx, String senderNickname, int receiverIdx,
 			String receiverNickname, Timestamp sendDate, Timestamp readDate) {
+		super();
+		this.l_idx = l_idx;
 		this.title = title;
 		this.contents = contents;
 		this.senderIdx = senderIdx;
@@ -28,11 +28,12 @@ public class LetterDTO {
 		this.readDate = readDate;
 	}
 
-	public LetterDTO(int l_idx, String title, String contents, String listNickname, Timestamp sendDate, Timestamp readDate) {
+	public LetterDTO(int l_idx, String title, String contents,String senderNickname, String receiverNickname, Timestamp sendDate, Timestamp readDate) {
 		this.l_idx = l_idx;
 		this.title = title;
 		this.contents = contents;
-		this.listNickname = listNickname;
+		this.senderNickname = senderNickname;
+		this.receiverNickname = receiverNickname;
 		this.sendDate = sendDate;
 		this.readDate = readDate;
 	}
@@ -110,15 +111,5 @@ public class LetterDTO {
 	public void setReadDate(Timestamp readDate) {
 		this.readDate = readDate;
 	}
-
-	public String getListNickname() {
-		return listNickname;
-	}
-
-	public void setListNickname(String listNickname) {
-		this.listNickname = listNickname;
-	}
-	
-	
 	
 }
