@@ -21,26 +21,27 @@ import dto.BookDTO;
 import frame.Home;
 import frame.ImagePanel;
 
-public class BookSearchDialog extends JDialog {
+public class BookDeleteDialog extends JDialog {
 	
-	private int value = 0;
+	private boolean value = false;
 	
-	JLabel searchLabel, titleLabel, authorLabel, publisherLabel, stateLabel;
-	JTextField searchField, titleField, authorField, publisherField;
-	
+	int b_idx;
+
+	JLabel titleLabel, authorLabel, publisherLabel, searchLabel, stateLabel;
+	JTextField titleField, authorField, publisherField, searchField;
 	ImagePanel imagePanel;
-	JButton searchBtn, rentalBtn, reserveBtn;
+	JButton deleteBtn, searchBtn;
 
-	public BookSearchDialog(Home frame, String title) {
+	public BookDeleteDialog(Home frame, String title) {
 		super(frame, title, true);
-
+		
 		add(searchLabel = new JLabel("검색"));
 		searchLabel.setBounds(10, 0, 40, 30);
 		add(searchField = new JTextField());
 		searchField.setBounds(55, 0, 200, 30);
 		add(searchBtn = new JButton("검색"));
 		searchBtn.setBounds(260, 0, 60, 30);
-		
+
 		add(titleLabel = new JLabel("제목"));
 		titleLabel.setBounds(10, 35, 40, 30);
 		add(titleField = new JTextField());
@@ -68,25 +69,23 @@ public class BookSearchDialog extends JDialog {
 		imagePanel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 		imagePanel.setBounds(180, 35, 140, 190);
 		
-		add(rentalBtn = new JButton("대여"));
-		rentalBtn.setBounds(195, 230, 60, 30);
-		add(reserveBtn = new JButton("예약"));
-		reserveBtn.setBounds(260, 230, 60, 30);
+		add(deleteBtn = new JButton("삭제"));
+		deleteBtn.setBounds(260, 230, 60, 30);
 		
 		
 		
 		
 		getContentPane().setLayout(new BorderLayout());
 
-
 		setSize(340, 295);
-		setLocationRelativeTo(null);
 		setResizable(false);
-
+		setLocationRelativeTo(null);
+		
 		generateEvents();
 	}
-		
+	
 	private void generateEvents() {
+		
 		searchBtn.addActionListener(new ActionListener() {
 			
 			@Override
@@ -110,41 +109,30 @@ public class BookSearchDialog extends JDialog {
 					int b_idx = dao.getBookIdx_FromTitle(conn, selectedTitle);
 					BookDTO dto = dao.getBookInfo(conn, b_idx);
 					
+					setB_idx(dto.getIdx());
 					titleField.setText(dto.getTitle());
 					authorField.setText(dto.getAuthor());
 					publisherField.setText(dto.getPublisher());
 					
 					int checkReservation = dao.checkBookReservation(conn, b_idx);
-					int checkReservationMine = dao.checkBookReservationMine(conn, Home.getSession_idx(), b_idx);
-//					이걸로 여기서도 예약된 내 첵을 대여할 수 있게 만들기
 					int checkRental = dao.checkBookRental(conn, b_idx);
 					
 					if(checkReservation == 1 & checkRental == 0) {
-						if(checkReservationMine == 1) {
-							stateLabel.setText("예약중");
-							stateLabel.setForeground(Color.BLUE);
-							rentalBtn.setEnabled(true);
-							reserveBtn.setEnabled(false);
-						} else {
-							stateLabel.setText("예약중");
-							stateLabel.setForeground(Color.BLUE);
-							rentalBtn.setEnabled(false);
-							reserveBtn.setEnabled(false);
-						}
+						stateLabel.setText("예약중");
+						stateLabel.setForeground(Color.BLUE);
+						deleteBtn.setEnabled(false);
 					} else if(checkReservation == 0 & checkRental == 1) {
 						stateLabel.setText("대여중");
 						stateLabel.setForeground(Color.RED);
-						rentalBtn.setEnabled(false);
-						reserveBtn.setEnabled(false);
+						deleteBtn.setEnabled(false);
 					} else if(checkReservation == 0 & checkRental == 0) {
 						stateLabel.setText("대여가능");
 						stateLabel.setForeground(Color.BLACK);
-						rentalBtn.setEnabled(true);
-						reserveBtn.setEnabled(true);
+						deleteBtn.setEnabled(true);
 					}
 					
 					String bookImgName = dto.getImgName();
-					if(bookImgName.trim().length() == 0 || bookImgName.equals("")) {
+					if(bookImgName.trim().length() == 0) {
 						imagePanel.setNoImage();
 					} else {
 						imagePanel.setSavedImage(bookImgName);
@@ -154,47 +142,68 @@ public class BookSearchDialog extends JDialog {
 			}
 		});
 		
-		rentalBtn.addActionListener(new ActionListener() {
+		deleteBtn.addActionListener(new ActionListener() {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				value = 1;
-				setVisible(false);
-			}
-		});
-		
-		reserveBtn.addActionListener(new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				value = 2;
+				if(getTitleField().length() == 0) {
+					JOptionPane.showMessageDialog(null, "책 제목을 입력해주세요", "책 삭제", JOptionPane.WARNING_MESSAGE);
+					titleField.requestFocus();
+					return;
+				}
+				if(getAuthorField().length() == 0) {
+					JOptionPane.showMessageDialog(null, "저자를 입력해주세요", "책 삭제", JOptionPane.WARNING_MESSAGE);
+					authorField.requestFocus();
+					return;
+				}
+				if(getPublisherField().length() == 0) {
+					JOptionPane.showMessageDialog(null, "출판사를 입력해주세요", "책 삭제", JOptionPane.WARNING_MESSAGE);
+					publisherField.requestFocus();
+					return;
+				}
+				int check = JOptionPane.showConfirmDialog(null, "정말 해당 책을 DB에서 삭제하시겠습니까?\n복구는 불가능합니다.", "책 삭제", JOptionPane.YES_NO_OPTION);
+				if(check != JOptionPane.YES_OPTION) return;
+				
+				value = true;
 				setVisible(false);
 			}
 		});
 	}
 
-	public int check() {
+	public boolean check() {
 		return this.value;
 	}
+	
 
-	public JTextField getTitleField() {
-		return titleField;
+	public int getB_idx() {
+		return b_idx;
+	}
+
+	public void setB_idx(int b_idx) {
+		this.b_idx = b_idx;
+	}
+
+	public String getTitleField() {
+		return titleField.getText().trim();
 	}
 
 	public void setTitleField(JTextField titleField) {
 		this.titleField = titleField;
 	}
 
-	public JTextField getSearchField() {
-		return searchField;
+	public String getAuthorField() {
+		return authorField.getText().trim();
 	}
 
-	public void setSearchField(String str) {
-		this.searchField.setText(str);
+	public void setAuthorField(JTextField authorField) {
+		this.authorField = authorField;
 	}
 
-	public JButton getSearchBtn() {
-		return searchBtn;
+	public String getPublisherField() {
+		return publisherField.getText().trim();
 	}
-	
+
+	public void setPublisherField(JTextField publisherField) {
+		this.publisherField = publisherField;
+	}
 }

@@ -25,8 +25,8 @@ import dto.MemberDTO;
 import frame.Home;
 
 public class MemModiDialog extends JDialog {
+	
 	private boolean value = false;
-	private int session_idx;
 	
 	JLabel idLabel,  nicknameLabel, nameLabel, ageLabel, genderLabel, telLabel, emailLabel,
 			addressLabel;
@@ -47,9 +47,8 @@ public class MemModiDialog extends JDialog {
 
 	JButton modiBtn, exitBtn, checkNicknameBtn;
 	
-	public MemModiDialog(Home frame, String title, int session_idx) {
+	public MemModiDialog(Home frame, String title) {
 		super(frame, title, true);
-		this.session_idx = session_idx;
 		
 		bg.add(maleBtn);
 		bg.add(femaleBtn);
@@ -86,8 +85,6 @@ public class MemModiDialog extends JDialog {
 //		genderLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 		genderLabel.setBounds(10, 120, 80, 30);
 		add(genderPanel = new JPanel());
-		maleBtn.setActionCommand("M");
-		femaleBtn.setActionCommand("F");
 		bg.add(maleBtn);
 		bg.add(femaleBtn);
 		genderPanel.add(maleBtn);
@@ -127,40 +124,8 @@ public class MemModiDialog extends JDialog {
 		setLocationRelativeTo(null);
 		setResizable(false);
 		
-		setMemInfo();
 		generateEvents();
 		
-	}
-	
-	private void setMemInfo() {
-		
-		Connection conn = GenerateConnection.getConnection(); 
-		DAO dao = DAO.getInstance();
-		MemberDTO member = dao.getMemberInfo(conn, this.session_idx);
-		
-		idField.setText(member.getId());
-		nicknameField.setText(member.getNickname());
-		nameField.setText(member.getName());
-		ageField.setText(String.valueOf(member.getAge()));
-		
-		if(member.getGender().equals("M")) {
-			maleBtn.setSelected(true);
-		} else if(member.getGender().equals("F")) {
-			femaleBtn.setSelected(true);
-		}
-		
-		telField.setText(String.valueOf(member.getTel()));
-		emailField_1.setText(member.getEmail_1());
-		
-		if(member.getEmail_2().equals("naver.com")) {
-			emailField_2.setSelectedItem("naver.com");
-		} else {
-			emailField_2.setSelectedItem("gmail.com");
-		}
-		
-		addressArea.setText(member.getAddress());
-		
-		DB_Closer.close(conn);
 	}
 
 	private void generateEvents() {
@@ -263,54 +228,60 @@ public class MemModiDialog extends JDialog {
 		return idField.getText().trim();
 	}
 
-	public void setIdField(JTextField idField) {
-		this.idField = idField;
+	public void setIdField(String str) {
+		this.idField.setText(str);
 	}
 
 	public String getNicknameField() {
 		return nicknameField.getText().trim();
 	}
 
-	public void setNicknameField(JTextField nicknameField) {
-		this.nicknameField = nicknameField;
+	public void setNicknameField(String str) {
+		this.nicknameField.setText(str);
 	}
 
 	public String getNameField() {
 		return nameField.getText().trim();
 	}
 
-	public void setNameField(JTextField nameField) {
-		this.nameField = nameField;
+	public void setNameField(String str) {
+		this.nameField.setText(str);
 	}
 
 	public String getAgeField() {
 		return ageField.getText().trim();
 	}
 
-	public void setAgeField(JTextField ageField) {
-		this.ageField = ageField;
+	public void setAgeField(int i) {
+		this.ageField.setText(String.valueOf(i));
 	}
 
 	public String getTelField() {
 		return telField.getText().trim();
 	}
 
-	public void setTelField(JTextField telField) {
-		this.telField = telField;
+	public void setTelField(int i) {
+		this.telField.setText(String.valueOf(i));
 	}
 
 	public String getEmailField_1() {
 		return emailField_1.getText().trim();
 	}
 
-	public void setEmailField_1(JTextField emailField_1) {
-		this.emailField_1 = emailField_1;
+	public void setEmailField_1(String str) {
+		this.emailField_1.setText(str);
 	}
 
 	public String getGender() {
-		return bg.getSelection().getActionCommand().trim();
+		String gender = "M";
+		if(this.femaleBtn.isSelected()) gender = "F";
+		return gender;
 	}
 
+	public JComboBox<String> getEmailField_2_List() {
+		return emailField_2; 
+	}
+	
 	public String getEmailField_2() {
 		return emailField_2.getSelectedItem().toString().trim();
 	}
@@ -323,7 +294,25 @@ public class MemModiDialog extends JDialog {
 		return addressArea.getText().trim();
 	}
 
-	public void setAddressArea(JTextArea addressArea) {
-		this.addressArea = addressArea;
+	public void setAddressArea(String str) {
+		this.addressArea.setText(str);
 	}
+
+	public JRadioButton getMaleBtn() {
+		return maleBtn;
+	}
+
+	public void setMaleBtn(JRadioButton maleBtn) {
+		this.maleBtn = maleBtn;
+	}
+
+	public JRadioButton getFemaleBtn() {
+		return femaleBtn;
+	}
+
+	public void setFemaleBtn(JRadioButton femaleBtn) {
+		this.femaleBtn = femaleBtn;
+	}
+	
+	
 }

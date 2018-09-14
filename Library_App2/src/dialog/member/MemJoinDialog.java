@@ -22,7 +22,8 @@ import db.util.GenerateConnection;
 import frame.Home;
 
 public class MemJoinDialog extends JDialog {
-private boolean value = false;
+	
+	private boolean value = false;
 	
 	JLabel idLabel, pwLabel, pw2Label, nicknameLabel, nameLabel, 
 		ageLabel, genderLabel, telLabel, emailLabel, addressLabel;
@@ -99,8 +100,6 @@ private boolean value = false;
 //		genderLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 		genderLabel.setBounds(10, 180, 80, 30);
 		add(genderPanel = new JPanel());
-		maleBtn.setActionCommand("M");
-		femaleBtn.setActionCommand("F");
 		bg.add(maleBtn);
 		bg.add(femaleBtn);
 		genderPanel.add(maleBtn);
@@ -336,7 +335,9 @@ private boolean value = false;
 	}
 
 	public String getGender() {
-		return bg.getSelection().getActionCommand().trim();
+		String gender = "M";
+		if(this.femaleBtn.isSelected()) gender = "F";
+		return gender;
 	}
 
 //	public void setBg(ButtonGroup bg) {

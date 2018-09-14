@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.security.acl.Owner;
 import java.sql.Connection;
 import java.util.Vector;
 
@@ -21,6 +22,10 @@ import db.util.GenerateConnection;
 
 public class LetterFindNicknameDialog extends JDialog{
 	
+	private int check;
+	LetterDialog owner1;
+	LetterSendDialog owner2;
+	
 	private boolean value = false;
 	
 	JList<String> nicknameList;
@@ -28,8 +33,14 @@ public class LetterFindNicknameDialog extends JDialog{
 	JButton selectBtn;
 	JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 	
-	public LetterFindNicknameDialog(JDialog owner, String title) {
+	public LetterFindNicknameDialog(JDialog owner, String title, int check) {
 		super(owner, title, true);
+		this.check = check;
+		if(check == 1) {
+			owner1 = (LetterDialog) owner;
+		} else if(check == 2) {
+			owner2 = (LetterSendDialog) owner;
+		}
 		
 		Connection conn = GenerateConnection.getConnection();
 		DAO dao = DAO.getInstance();
@@ -58,6 +69,12 @@ public class LetterFindNicknameDialog extends JDialog{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				
+				if(check == 1) {
+					owner1.sendPanel.setReceiverField(nicknameList.getSelectedValue());
+				} else if(check == 2) {
+					owner2.setReceiverField(nicknameList.getSelectedValue());
+				}
+				setVisible(false);
 			}
 		});
 	}
@@ -68,6 +85,12 @@ public class LetterFindNicknameDialog extends JDialog{
 		public void mouseClicked(MouseEvent e) {
 			if(e.getClickCount() == 2) {
 				
+				if(check == 1) {
+					owner1.sendPanel.setReceiverField(nicknameList.getSelectedValue());
+				} else if(check == 2) {
+					owner2.setReceiverField(nicknameList.getSelectedValue());
+				}
+				setVisible(false);
 			}
 		}
 	}

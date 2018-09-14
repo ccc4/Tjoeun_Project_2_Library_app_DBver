@@ -13,7 +13,8 @@ import javax.swing.JTextField;
 import frame.Home;
 
 public class LoginDialog extends JDialog {
-private boolean value = false;
+	
+	private boolean value = false;
 	
 	JLabel idLabel, pwLabel;
 	JTextField idField, pwField;

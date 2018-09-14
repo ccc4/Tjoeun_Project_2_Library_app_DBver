@@ -70,7 +70,7 @@ public class LetterSendDialog extends JDialog{
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				LetterFindNicknameDialog letterFindNicknameDialog = new LetterFindNicknameDialog(owner, "닉네임 찾기");
+				LetterFindNicknameDialog letterFindNicknameDialog = new LetterFindNicknameDialog(owner, "닉네임 찾기", 2); // 2는 다이알로그로 열릴 시를 체크하기 위해
 				letterFindNicknameDialog.setVisible(true);
 				
 				if(!letterFindNicknameDialog.check()) return;
@@ -115,8 +115,8 @@ public class LetterSendDialog extends JDialog{
 	}
 
 
-	public void setReceiverField(JTextField receiverField) {
-		this.receiverField = receiverField;
+	public void setReceiverField(String str) {
+		this.receiverField.setText(str);
 	}
 
 

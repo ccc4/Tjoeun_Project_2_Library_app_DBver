@@ -84,9 +84,6 @@ public class BookModiDialog extends JDialog {
 		
 		getContentPane().setLayout(new BorderLayout());
 
-		imagePanel.setOpaque(true);
-		imagePanel.setBackground(Color.LIGHT_GRAY);
-
 		setSize(340, 295);
 		setResizable(false);
 		setLocationRelativeTo(null);

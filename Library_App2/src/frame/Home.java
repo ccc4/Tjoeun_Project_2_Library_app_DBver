@@ -31,9 +31,9 @@ import db.util.DB_Closer;
 import db.util.DB_Transaction;
 import db.util.GenerateConnection;
 import dialog.book.BookAddDialog;
+import dialog.book.BookDeleteDialog;
 import dialog.book.BookModiDialog;
 import dialog.book.BookSearchDialog;
-import dialog.letter.LetterDialog;
 import dialog.letter.LetterDialog;
 import dialog.member.LoginDialog;
 import dialog.member.MemChangePw;
@@ -128,7 +128,7 @@ public class Home extends JFrame {
 	JMenuItem admin_Book_List = new JMenuItem("책 목록");
 	JMenuItem admin_Book_Add = new JMenuItem("책 추가");
 	JMenuItem admin_Book_Modify = new JMenuItem("책 정보수정");
-	JMenuItem admin_Book_Remove = new JMenuItem("책 삭제");
+	JMenuItem admin_Book_delete = new JMenuItem("책 삭제");
 	JMenu menu_Admin_Member = new JMenu("회원 관리");
 	JMenuItem admin_Member_List = new JMenuItem("회원 목록");
 	JMenuItem admin_Member_Add = new JMenuItem("회원 추가");
@@ -483,7 +483,7 @@ public class Home extends JFrame {
 			menu_Admin_Book.addSeparator();
 			menu_Admin_Book.add(admin_Book_Add);
 			menu_Admin_Book.add(admin_Book_Modify);
-			menu_Admin_Book.add(admin_Book_Remove);
+			menu_Admin_Book.add(admin_Book_delete);
 
 			menu_Admin_Member.add(admin_Member_List);
 			menu_Admin_Member.addSeparator();
@@ -590,13 +590,41 @@ public class Home extends JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				MemModiDialog memModiDialog = new MemModiDialog(owner, "회원정보 수정", getSession_idx());
+				MemModiDialog memModiDialog = new MemModiDialog(owner, "회원정보 수정");
+				
+				Connection conn = GenerateConnection.getConnection();
+				DAO dao = DAO.getInstance();
+				
+				MemberDTO member = dao.getMemberInfo(conn, getSession_idx());
+				
+				memModiDialog.setIdField(member.getId());
+				memModiDialog.setNicknameField(member.getNickname());
+				memModiDialog.setNameField(member.getName());
+				memModiDialog.setAgeField(member.getAge());
+				
+				
+				if(member.getGender().equals("M")) {
+					memModiDialog.getMaleBtn().setSelected(true);
+				} else if(member.getGender().equals("F")) {
+					memModiDialog.getFemaleBtn().setSelected(true);
+				}
+				
+				memModiDialog.setTelField(member.getTel());
+				memModiDialog.setEmailField_1(member.getEmail_1());
+				
+				if(member.getEmail_2().equals("naver.com")) {
+					memModiDialog.getEmailField_2_List().setSelectedItem("naver.com");
+				} else {
+					memModiDialog.getEmailField_2_List().setSelectedItem("gmail.com");
+				}
+				
+				memModiDialog.setAddressArea(member.getAddress());
+				
+				// 다이알로그가 꺼지면
+				
 				memModiDialog.setVisible(true);
 
-				if (!memModiDialog.check()) {
-//					JOptionPane.showMessageDialog(null, "정보수정을 취소하였습니다.", "Cancel", JOptionPane.INFORMATION_MESSAGE);
-					return;
-				}
+				if (!memModiDialog.check()) return;
 
 				String nickname = memModiDialog.getNicknameField();
 				String name = memModiDialog.getNameField();
@@ -607,14 +635,13 @@ public class Home extends JFrame {
 				String email_2 = memModiDialog.getEmailField_2();
 				String address = memModiDialog.getAddressArea();
 
-				Connection conn = GenerateConnection.getConnection();
-				DAO dao = DAO.getInstance();
 
 				int re = dao.mModify(conn, getSession_idx(), nickname, name, age, gender, tel, email_1, email_2, address);
 
 				if (re == 0) {
 					JOptionPane.showMessageDialog(null, "회원정보 수정 실패", "회원정보 수정", JOptionPane.WARNING_MESSAGE);
 				} else {
+					memTopNorthLabel.setText(nickname + " 님 어서오세용");
 					JOptionPane.showMessageDialog(null, "회원정보 수정 성공", "회원정보 수정", JOptionPane.INFORMATION_MESSAGE);
 				}
 
@@ -775,7 +802,7 @@ public class Home extends JFrame {
 				refreshTable();
 			}
 		});
-
+		
 		this.admin_Book_Modify.addActionListener(new ActionListener() {
 
 			@Override
@@ -807,6 +834,32 @@ public class Home extends JFrame {
 				}
 				DB_Closer.close(conn);
 
+				refreshTable();
+			}
+		});
+		
+		this.admin_Book_delete.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				BookDeleteDialog bookDeleteDialog = new BookDeleteDialog(owner, "책 삭제");
+				bookDeleteDialog.setVisible(true);
+
+				if (!bookDeleteDialog.check())return;
+				
+				int b_idx = bookDeleteDialog.getB_idx();
+				
+				Connection conn = GenerateConnection.getConnection();
+				DAO dao = DAO.getInstance();
+				
+				int re = dao.bDelete(conn, b_idx);
+				if (re == 0) {
+					JOptionPane.showMessageDialog(null, "책 삭제 실패", "책 삭제", JOptionPane.WARNING_MESSAGE);
+				} else {
+					JOptionPane.showMessageDialog(null, "책 삭제 완료", "책 삭제", JOptionPane.INFORMATION_MESSAGE);
+				}
+				DB_Closer.close(conn);
+				
 				refreshTable();
 			}
 		});

@@ -3,20 +3,18 @@ package dialog.letter;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.sql.Connection;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -36,7 +34,6 @@ import frame.Home;
 public class LetterDialog extends JDialog {
 
 	private LetterDialog owner = this;
-	Home frame;
 	
 	ArrayList<LetterDTO> receiveLetters = new ArrayList<>();
 	ArrayList<LetterDTO> sentLetters = new ArrayList<>();
@@ -67,7 +64,6 @@ public class LetterDialog extends JDialog {
 	
 	public LetterDialog(Home frame, String title) {
 		super(frame, title, true);
-		this.frame = frame;
 		
 		pane.addTab("받은 편지", receivePanel = new ReceivePanel());
 		pane.addTab("보낸 편지", sentPanel = new SentPanel());
@@ -129,7 +125,7 @@ public class LetterDialog extends JDialog {
 		Connection conn = GenerateConnection.getConnection();
 		DAO dao = DAO.getInstance();
 		
-		receiveLetters = dao.getMyReceiveLetterList(conn, frame.getSession_idx());
+		receiveLetters = dao.getMyReceiveLetterList(conn, Home.getSession_idx());
 		
 		for(int i=0;i<receiveLetters.size();i++) {
 			
@@ -158,7 +154,7 @@ public class LetterDialog extends JDialog {
 		Connection conn = GenerateConnection.getConnection();
 		DAO dao = DAO.getInstance();
 		
-		sentLetters = dao.getMySendLetterList(conn, frame.getSession_idx());
+		sentLetters = dao.getMySendLetterList(conn, Home.getSession_idx());
 		
 		for(int i=0;i<sentLetters.size();i++) {
 			
@@ -230,7 +226,7 @@ public class LetterDialog extends JDialog {
 				
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					LetterFindNicknameDialog letterFindNicknameDialog = new LetterFindNicknameDialog(owner, "닉네임 찾기");
+					LetterFindNicknameDialog letterFindNicknameDialog = new LetterFindNicknameDialog(owner, "닉네임 찾기", 1); // 1은 편지함에서 바로 보내는 것을 알기 위해
 					letterFindNicknameDialog.setVisible(true);
 					
 					if(!letterFindNicknameDialog.check()) return;
@@ -275,7 +271,7 @@ public class LetterDialog extends JDialog {
 						JOptionPane.showMessageDialog(null, "보낼 대상을 정확히 기재해주세요.", "편지 보내기", JOptionPane.WARNING_MESSAGE);
 						return;
 					}
-					int re = dao.lSend(conn, title, contents, frame.getSession_idx(), receiverIdx);
+					int re = dao.lSend(conn, title, contents, Home.getSession_idx(), receiverIdx);
 					if(re == 0) {
 						JOptionPane.showMessageDialog(null, "편지 보내기 실패\n계속 반복될 경우 관리자에게 문의하세요.", "편지 보내기", JOptionPane.WARNING_MESSAGE);
 					} else {
@@ -295,8 +291,8 @@ public class LetterDialog extends JDialog {
 			return receiverField.getText().trim();
 		}
 
-		public void setReceiverField(JTextField receiverField) {
-			this.receiverField = receiverField;
+		public void setReceiverField(String str) {
+			this.receiverField.setText(str);
 		}
 
 		public String getTitleField() {
@@ -329,7 +325,7 @@ public class LetterDialog extends JDialog {
 				
 				readReceiveLetterDialog.setL_idx(dto.getL_idx());
 				readReceiveLetterDialog.setSenderField(dto.getSenderNickname());
-				SimpleDateFormat dateFormat = new SimpleDateFormat("yy-MM-dd / hh:mm:ss");
+				SimpleDateFormat dateFormat = new SimpleDateFormat("yy-MM-dd / HH:mm:ss");
 				readReceiveLetterDialog.setReceiveDateField(dateFormat.format(dto.getSendDate()));
 				readReceiveLetterDialog.setTitleField(dto.getTitle());
 				readReceiveLetterDialog.setContentsField(dto.getContents());

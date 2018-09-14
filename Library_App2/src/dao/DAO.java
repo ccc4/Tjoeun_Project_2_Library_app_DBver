@@ -205,7 +205,7 @@ public class DAO {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 
-		String sql = "SELECT * FROM member WHERE m_idx = ?";
+		String sql = "SELECT m_idx, m_id, m_pw, m_nickname, m_name, m_age, m_gender, m_tel, m_email_1, m_email_2, m_address, convert_tz(m_joinDate, \"+0:00\", \"-9:00\") as m_joinDate FROM member WHERE m_idx = ?";
 
 		try {
 			pstmt = conn.prepareStatement(sql);
@@ -467,7 +467,7 @@ public class DAO {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		
-		String sql = "SELECT * FROM book WHERE b_idx = ?";
+		String sql = "SELECT b_idx, b_title, b_author, b_publisher, b_imgName, convert_tz(b_addDate, \"+0:00\", \"-9:00\") as b_addDate FROM book WHERE b_idx = ?";
 		
 		try {
 			pstmt = conn.prepareStatement(sql);
@@ -626,7 +626,7 @@ public class DAO {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		
-		String sql = "SELECT * FROM rental_list_view WHERE rt_m_idx = ? ORDER BY b_title ASC";
+		String sql = "SELECT b_title, convert_tz(rt_rentalDate, \"+0:00\", \"-9:00\") as rt_rentalDate FROM rental_list_view WHERE rt_m_idx = ? ORDER BY b_title ASC";
 		
 		try {
 			pstmt = conn.prepareStatement(sql);
@@ -659,7 +659,7 @@ public class DAO {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		
-		String sql = "SELECT * FROM reservation_list_view WHERE rv_m_idx = ? ORDER BY b_title ASC";
+		String sql = "SELECT b_title, convert_tz(rv_reserveDate, \"+0:00\", \"-9:00\") as rv_reserveDate FROM reservation_list_view WHERE rv_m_idx = ? ORDER BY b_title ASC";
 		
 		try {
 			pstmt = conn.prepareStatement(sql);
@@ -994,7 +994,7 @@ public class DAO {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		
-		String sql = "SELECT * FROM letter_view WHERE l_receiver_idx = ? AND l_receiver_deleted = 'N' ORDER BY l_sendDate DESC";
+		String sql = "SELECT l_idx, l_title, l_contents, sender_nickname, convert_tz(l_sendDate, \"+0:00\", \"-9:00\") as l_sendDate, convert_tz(l_readDate, \"+0:00\", \"-9:00\") as l_readDate FROM letter_view WHERE l_receiver_idx = ? AND l_receiver_deleted = 'N' ORDER BY l_sendDate DESC";
 		
 		try {
 			pstmt = conn.prepareStatement(sql);
@@ -1032,7 +1032,7 @@ public class DAO {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		
-		String sql = "SELECT * FROM letter_view WHERE l_sender_idx = ? AND l_sender_deleted = 'N' ORDER BY l_sendDate DESC";
+		String sql = "SELECT l_idx, l_title, l_contents, receiver_nickname, convert_tz(l_sendDate, \"+0:00\", \"-9:00\") as l_sendDate, convert_tz(l_readDate, \"+0:00\", \"+9:00\") as l_readDate FROM letter_view WHERE l_sender_idx = ? AND l_sender_deleted = 'N' ORDER BY l_sendDate DESC";
 		
 		try {
 			pstmt = conn.prepareStatement(sql);
@@ -1050,7 +1050,6 @@ public class DAO {
 				dto = new LetterDTO(idx, title, contents, null, receiverNickname, sendDate, readDate);
 				dtos.add(dto);
 			}
-			
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -1207,5 +1206,34 @@ public class DAO {
 		}
 		
 		return nicknames;
+	}
+
+	public int bDelete(Connection conn, int b_idx) {
+
+		int re = 0;
+		
+		PreparedStatement pstmt = null;
+		
+		String sql = "DELETE FROM book WHERE b_idx = ?";
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, b_idx);
+			
+			int check = pstmt.executeUpdate();
+			
+			if(check == 0) {
+				re = 0;
+			} else {
+				re = 1;
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DB_Closer.close(pstmt);
+		}
+		
+		return re;
 	}
 }

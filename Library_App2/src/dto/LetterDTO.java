@@ -1,6 +1,7 @@
 package dto;
 
 import java.sql.Timestamp;
+import java.util.Date;
 
 public class LetterDTO {
 	
@@ -13,6 +14,8 @@ public class LetterDTO {
 	String receiverNickname;
 	Timestamp sendDate;
 	Timestamp readDate;
+//	Date sendDate;
+//	Date readDate;
 	
 	public LetterDTO(int l_idx, String title, String contents, int senderIdx, String senderNickname, int receiverIdx,
 			String receiverNickname, Timestamp sendDate, Timestamp readDate) {
@@ -111,5 +114,20 @@ public class LetterDTO {
 	public void setReadDate(Timestamp readDate) {
 		this.readDate = readDate;
 	}
+//	public Date getSendDate() {
+//		return sendDate;
+//	}
+//	
+//	public void setSendDate(Date sendDate) {
+//		this.sendDate = sendDate;
+//	}
+//	
+//	public Date getReadDate() {
+//		return readDate;
+//	}
+//	
+//	public void setReadDate(Date readDate) {
+//		this.readDate = readDate;
+//	}
 	
 }
