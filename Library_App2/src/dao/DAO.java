@@ -432,7 +432,36 @@ public class DAO {
 		return re;
 	}
 	
-	public int getBookIdx_FromTitle(Connection conn, String title) {
+	public int getBookIdx_FromTitleAuthor(Connection conn, String title, String author) {
+		
+		int idx = 0;
+		
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		
+		String sql = "SELECT b_idx FROM book WHERE b_title = ? AND b_author = ?";
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, title);
+			pstmt.setString(2, author);
+			rs = pstmt.executeQuery();
+			
+			if(rs.next()) {
+				idx = rs.getInt("b_idx");
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DB_Closer.close(rs);
+			DB_Closer.close(pstmt);
+		}
+		
+		return idx;
+	}
+	
+	public int getBookIdx_FromTitle(Connection conn, String title) { // 나중에 없어져야 할 기능
 		
 		int idx = 0;
 		
@@ -626,7 +655,7 @@ public class DAO {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		
-		String sql = "SELECT b_title, convert_tz(rt_rentalDate, \"+0:00\", \"-9:00\") as rt_rentalDate FROM rental_list_view WHERE rt_m_idx = ? ORDER BY b_title ASC";
+		String sql = "SELECT rt_b_idx, b_title, convert_tz(rt_rentalDate, \"+0:00\", \"-9:00\") as rt_rentalDate FROM rental_list_view WHERE rt_m_idx = ? ORDER BY b_title ASC";
 		
 		try {
 			pstmt = conn.prepareStatement(sql);
@@ -634,10 +663,11 @@ public class DAO {
 			rs = pstmt.executeQuery();
 			
 			while(rs.next()) {
+				int b_idx = rs.getInt("rt_b_idx");
 				String title = rs.getString("b_title");
 				Timestamp rentalDate = rs.getTimestamp("rt_rentalDate");
 				
-				dto = new RtListDTO(title, rentalDate);
+				dto = new RtListDTO(b_idx, title, rentalDate);
 				dtos.add(dto);
 			}
 			
@@ -659,7 +689,7 @@ public class DAO {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		
-		String sql = "SELECT b_title, convert_tz(rv_reserveDate, \"+0:00\", \"-9:00\") as rv_reserveDate FROM reservation_list_view WHERE rv_m_idx = ? ORDER BY b_title ASC";
+		String sql = "SELECT rv_b_idx, b_title, convert_tz(rv_reserveDate, \"+0:00\", \"-9:00\") as rv_reserveDate FROM reservation_list_view WHERE rv_m_idx = ? ORDER BY b_title ASC";
 		
 		try {
 			pstmt = conn.prepareStatement(sql);
@@ -667,10 +697,11 @@ public class DAO {
 			rs = pstmt.executeQuery();
 			
 			while(rs.next()) {
+				int b_idx = rs.getInt("rv_b_idx");
 				String title = rs.getString("b_title");
 				Timestamp reserveDate = rs.getTimestamp("rv_reserveDate");
 				
-				dto = new RvListDTO(title, reserveDate);
+				dto = new RvListDTO(b_idx, title, reserveDate);
 				dtos.add(dto);
 			}
 			
@@ -742,6 +773,34 @@ public class DAO {
 		}
 		
 		return re;
+	}
+	
+	public void bAutoReservationCancel() {
+		
+		Connection conn = GenerateConnection.getConnection();
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		
+		String sql = "SELECT rv_m_idx, rv_b_idx FROM autoReservationCancel_view";
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			rs = pstmt.executeQuery();
+			
+			while(rs.next()) {
+				bReservationCancel(conn, rs.getInt("rv_m_idx"), rs.getInt("rv_b_idx"));
+				
+				// 목록에서 지우면서 해당 회원에게 예약취소됐다는 메시지 보내기
+				
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DB_Closer.close(rs);
+			DB_Closer.close(pstmt);
+			DB_Closer.close(conn);
+		}
 	}
 	
 	public int checkBookExist(Connection conn, String title) {

@@ -8,8 +8,12 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.Connection;
+import java.sql.Timestamp;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -47,6 +51,20 @@ import dto.RvListDTO;
 
 @SuppressWarnings("serial")
 public class Home extends JFrame {
+	
+	private Home owner = this;
+	private static int session_idx = 0;
+
+	private int selectedBookIdx;
+	
+	ArrayList<BookDTO> books;
+	ArrayList<RtListDTO> rentalBooks;
+	ArrayList<RvListDTO> reserveBooks;
+	
+	
+	
+	
+	
 	// memTop 로그인
 	JLabel memTopNorthLabel = new JLabel("로그인 시 이용가능");
 	JPanel memTopCenterPanel = new JPanel(new GridLayout(2, 2));
@@ -56,7 +74,7 @@ public class Home extends JFrame {
 	JButton memLogoutBtn = new JButton("로그아웃");
 
 	// memMid 대여
-	String[] memRtListColumns = { "책 제목", "대여 날짜" };
+	String[] memRtListColumns = {" ", "책 제목", "대여 날짜" };
 	DefaultTableModel rtListModel = new DefaultTableModel(memRtListColumns, 0) {
 		public boolean isCellEditable(int row, int column) {
 			return false;
@@ -69,7 +87,7 @@ public class Home extends JFrame {
 	JButton memMidReturnBtn = new JButton("반납");
 
 	// memBot 예약
-	String[] memRvListColumns = { "책 제목", "예약 날짜" };
+	String[] memRvListColumns = {" ", "책 제목", "예약 만료" };
 	DefaultTableModel rvListModel = new DefaultTableModel(memRvListColumns, 0) {
 		public boolean isCellEditable(int row, int column) {
 			return false;
@@ -97,7 +115,7 @@ public class Home extends JFrame {
 
 	// 테이블 추가
 
-	String[] bookListColumns = { "책 제목", "저자", "출판사", "현재 상태" };
+	String[] bookListColumns = {"번호", "책 제목", "저자", "출판사", "현재 상태" };
 	DefaultTableModel bookListModel = new DefaultTableModel(bookListColumns, 0) {
 		public boolean isCellEditable(int row, int column) {
 			return false;
@@ -141,12 +159,6 @@ public class Home extends JFrame {
 
 	// =======================================================================
 
-	private Home owner = this;
-	private static int session_idx = 0;
-
-	private String selectedBookTitle;
-	private int selectedBookIdx;
-
 	public Home() {
 		super("Library_App");
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -166,6 +178,7 @@ public class Home extends JFrame {
 		memTopNorthLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
 		bookListTable.addMouseListener(new BookListSelectedRow());
+		bookListTable.getColumn("번호").setPreferredWidth(40);
 		bookListTable.getColumn("책 제목").setPreferredWidth(300);
 		bookListTable.getColumn("저자").setPreferredWidth(130);
 		bookListTable.getColumn("출판사").setPreferredWidth(130);
@@ -173,9 +186,13 @@ public class Home extends JFrame {
 		bookListTable.getTableHeader().setResizingAllowed(false);
 
 		rtListTable.addMouseListener(new MRentalListSelectedRow());
+		rtListTable.getColumn(" ").setPreferredWidth(10);
+		rtListTable.getColumn("책 제목").setPreferredWidth(100);
 		rtListTable.getTableHeader().setReorderingAllowed(false);
 		rtListTable.getTableHeader().setResizingAllowed(false);
 
+		rvListTable.getColumn(" ").setPreferredWidth(10);
+		rvListTable.getColumn("책 제목").setPreferredWidth(100);
 		rvListTable.addMouseListener(new MReservationListSelectedRow());
 		rvListTable.getTableHeader().setReorderingAllowed(false);
 		rvListTable.getTableHeader().setResizingAllowed(false);
@@ -188,7 +205,7 @@ public class Home extends JFrame {
 //			menu_Admin.setVisible(false); 테스트할땐 꺼두기
 		generateEvent();
 
-		this.setSize(1000, 450);
+		this.setSize(1100, 450);
 		this.setLocationRelativeTo(null);
 //			this.setResizable(false);
 		this.setVisible(true);
@@ -270,8 +287,10 @@ public class Home extends JFrame {
 			DAO dao = DAO.getInstance();
 
 			String bookImgName = "";
-			selectedBookTitle = (String) bookListTable.getValueAt(bookListTable.getSelectedRow(), 0);
-			selectedBookIdx = dao.getBookIdx_FromTitle(conn, selectedBookTitle);
+//			selectedBookTitle = (String) bookListTable.getValueAt(bookListTable.getSelectedRow(), 0);
+//			selectedBookIdx = dao.getBookIdx_FromTitle(conn, selectedBookTitle);
+			int index = Integer.parseInt((String) bookListTable.getValueAt(bookListTable.getSelectedRow(), 0)) -1;
+			selectedBookIdx = books.get(index).getIdx();
 
 			BookDTO dto = dao.getBookInfo(conn, selectedBookIdx);
 
@@ -310,20 +329,25 @@ public class Home extends JFrame {
 				
 				controlBtn();
 				BookSearchDialog bookSearchDialog = new BookSearchDialog(owner, "책 선택");
-				bookSearchDialog.setSearchField(selectedBookTitle);
+				
+				String targetTitle = (String) bookListTable.getValueAt(bookListTable.getSelectedRow(), 1);
+//				String targetAuthor = (String) bookListTable.getValueAt(bookListTable.getSelectedRow(), 2);
+				bookSearchDialog.setSearchField(targetTitle);
 				bookSearchDialog.getSearchBtn().doClick();
 				bookSearchDialog.setVisible(true);
 
 				
-				String title;
+				String title, author;
 				if (bookSearchDialog.check() == 0) {
 					return;
 				} else if (bookSearchDialog.check() == 1) { // 대여
 					int check = JOptionPane.showConfirmDialog(null, "이 책을 대여하시겠습니까?", "책 대여", JOptionPane.YES_NO_OPTION);
 					if (check != JOptionPane.YES_OPTION) return;
 
-					title = bookSearchDialog.getTitleField().getText().trim();
-					int b_idx = dao.getBookIdx_FromTitle(conn, title);
+					title = bookSearchDialog.getTitleField();
+					author = bookSearchDialog.getAuthorField();
+					
+					int b_idx = dao.getBookIdx_FromTitleAuthor(conn, title, author);
 
 					int checkReserve = dao.checkBookReservationMine(conn, getSession_idx(), b_idx);
 					if (checkReserve == 1) {
@@ -340,8 +364,10 @@ public class Home extends JFrame {
 					int check = JOptionPane.showConfirmDialog(null, "이 책을 예약하시겠습니까?", "책 예약", JOptionPane.YES_NO_OPTION);
 					if (check != JOptionPane.YES_OPTION) return;
 
-					title = bookSearchDialog.getTitleField().getText().trim();
-					int b_idx = dao.getBookIdx_FromTitle(conn, title);
+					title = bookSearchDialog.getTitleField();
+					author = bookSearchDialog.getAuthorField();
+					
+					int b_idx = dao.getBookIdx_FromTitleAuthor(conn, title, author);
 
 					int re = dao.bReserve(conn, getSession_idx(), b_idx);
 					if (re == 0) {
@@ -365,10 +391,10 @@ public class Home extends JFrame {
 			Connection conn = GenerateConnection.getConnection();
 			DAO dao = DAO.getInstance();
 
-			selectedBookTitle = (String) rtListTable.getModel().getValueAt(rtListTable.getSelectedRow(), 0);
-			selectedBookIdx = dao.getBookIdx_FromTitle(conn, selectedBookTitle);
-
-//			BookDTO dto = dao.getBookInfo(conn, selectedBookIdx);
+//			selectedBookTitle = (String) rtListTable.getModel().getValueAt(rtListTable.getSelectedRow(), 0);
+//			selectedBookIdx = dao.getBookIdx_FromTitle(conn, selectedBookTitle);
+			int index = Integer.parseInt((String) rtListTable.getValueAt(rtListTable.getSelectedRow(), 0))-1;
+			selectedBookIdx = rentalBooks.get(index).getB_idx();
 
 			memMidReturnBtn.setEnabled(true);
 			DB_Closer.close(conn);
@@ -383,8 +409,10 @@ public class Home extends JFrame {
 			Connection conn = GenerateConnection.getConnection();
 			DAO dao = DAO.getInstance();
 
-			selectedBookTitle = (String) rvListTable.getModel().getValueAt(rvListTable.getSelectedRow(), 0);
-			selectedBookIdx = dao.getBookIdx_FromTitle(conn, selectedBookTitle);
+//			selectedBookTitle = (String) rvListTable.getModel().getValueAt(rvListTable.getSelectedRow(), 0);
+//			selectedBookIdx = dao.getBookIdx_FromTitle(conn, selectedBookTitle);
+			int index = Integer.parseInt((String) rvListTable.getValueAt(rvListTable.getSelectedRow(), 0))-1;
+			selectedBookIdx = reserveBooks.get(index).getB_idx();
 
 			memBotRentalBtn.setEnabled(true);
 			memBotReserveCancelBtn.setEnabled(true);
@@ -404,24 +432,25 @@ public class Home extends JFrame {
 		Connection conn = GenerateConnection.getConnection();
 		DAO dao = DAO.getInstance();
 
-		ArrayList<BookDTO> books = dao.getBookList(conn);
+		books = dao.getBookList(conn);
 
 		for (int i = 0; i < books.size(); i++) {
 
-			String[] book = new String[4];
-			book[0] = books.get(i).getTitle();
-			book[1] = books.get(i).getAuthor();
-			book[2] = books.get(i).getPublisher();
+			String[] book = new String[5];
+			book[0] = String.valueOf(i+1);
+			book[1] = books.get(i).getTitle();
+			book[2] = books.get(i).getAuthor();
+			book[3] = books.get(i).getPublisher();
 
 			int checkReservation = dao.checkBookReservation(conn, books.get(i).getIdx());
 			int checkRental = dao.checkBookRental(conn, books.get(i).getIdx());
 
 			if (checkReservation == 1 & checkRental == 0) {
-				book[3] = "예약중";
+				book[4] = "예약중";
 			} else if (checkReservation == 0 & checkRental == 1) {
-				book[3] = "대여중";
+				book[4] = "대여중";
 			} else if (checkReservation == 0 & checkRental == 0) {
-				book[3] = "대여가능";
+				book[4] = "대여가능";
 			}
 
 			bookListModel.addRow(book);
@@ -436,15 +465,16 @@ public class Home extends JFrame {
 		Connection conn = GenerateConnection.getConnection();
 		DAO dao = DAO.getInstance();
 
-		ArrayList<RtListDTO> books = dao.getRentalList(conn, getSession_idx());
+		rentalBooks = dao.getRentalList(conn, getSession_idx());
 
-		for (int i = 0; i < books.size(); i++) {
+		for (int i = 0; i < rentalBooks.size(); i++) {
 
-			String[] book = new String[2];
-			book[0] = books.get(i).getTitle();
+			String[] book = new String[3];
+			book[0] = String.valueOf(i+1);
+			book[1] = rentalBooks.get(i).getTitle();
 
 			SimpleDateFormat dateFormat = new SimpleDateFormat("yy-MM-dd");
-			book[1] = dateFormat.format(books.get(i).getRentalDate());
+			book[2] = dateFormat.format(rentalBooks.get(i).getRentalDate());
 
 			rtListModel.addRow(book);
 		}
@@ -458,20 +488,73 @@ public class Home extends JFrame {
 		Connection conn = GenerateConnection.getConnection();
 		DAO dao = DAO.getInstance();
 
-		ArrayList<RvListDTO> books = dao.getReservationList(conn, getSession_idx());
+		reserveBooks = dao.getReservationList(conn, getSession_idx());
 
-		for (int i = 0; i < books.size(); i++) {
+		int reservationCancelNum = 0;
+		for (int i = 0; i < reserveBooks.size(); i++) {
 
-			String[] book = new String[2];
-			book[0] = books.get(i).getTitle();
+			String[] book = new String[3];
+			book[0] = String.valueOf(i+1);
+			book[1] = reserveBooks.get(i).getTitle();
 
-			SimpleDateFormat dateFormat = new SimpleDateFormat("yy-MM-dd");
-			book[1] = dateFormat.format(books.get(i).getReserveDate());
+//			book[1] = dateFormat.format(books.get(i).getReserveDate()); // 예전 코드
 
+			Calendar cal = Calendar.getInstance();
+			
+			
+			// sql 에서 한큐에 해결.. 추후 다른 기능에 쓰이거나 따로 공부할 것
+			
+//			// 오늘 날짜
+//			SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//			String today = sdf1.format(cal.getTime());
+//			Timestamp now = Timestamp.valueOf(today);
+//			System.out.println("today: " + now);
+//			
+//			// 대상 날짜
+//			Timestamp original = reserveBooks.get(i).getReserveDate();
+//			cal.setTimeInMillis(original.getTime());
+//			System.out.println("original: " + original);
+//			
+//			
+//			int checkDate = 0;
+//			// 차 구하기
+//			try {
+//				Date nowDate = sdf1.parse(today);
+//				Date targetDate = sdf1.parse(sdf1.format(original));
+////				Date targetDate = sdf1.parse("2018-09-13 17:24:00"); // 테스트용
+//				
+//				int sub = (int) (nowDate.getTime() - targetDate.getTime());
+////				System.out.println("sub: " + sub);
+//				checkDate = sub / (60 * 60 * 24 * 1000); // 날짜로 변환
+//				System.out.println("day: " + checkDate);
+//			} catch (ParseException e) {
+//				e.printStackTrace();
+//			}
+//			
+//			if(checkDate >= 1) {
+//				int b_idx = reserveBooks.get(i).getB_idx();
+//				int re = dao.bReservationCancel(conn, getSession_idx(), b_idx);
+//				if (re == 0) {
+//					JOptionPane.showMessageDialog(null, "자동 예약 취소 실패", "책 예약", JOptionPane.WARNING_MESSAGE);
+//				}
+//				reservationCancelNum++;
+//				continue;
+//			}
+			
+			
+			
+			cal.add(Calendar.SECOND, (60 * 60 * 24));
+			Timestamp later = new Timestamp(cal.getTime().getTime());
+			SimpleDateFormat sdf2 = new SimpleDateFormat("MM/dd HH:mm");
+			book[2] = sdf2.format(later) + " 까지";
+			
 			rvListModel.addRow(book);
 		}
-
 		DB_Closer.close(conn);
+		
+		if(reservationCancelNum >= 1) {
+			JOptionPane.showMessageDialog(null, "예약 기간이 만료되어\n총 " + reservationCancelNum + " 권의 책이 예약 취소 처리되었습니다.", "책 예약", JOptionPane.INFORMATION_MESSAGE);
+		}
 	}
 
 	class MenubarClass extends JMenuBar {
@@ -1030,15 +1113,17 @@ public class Home extends JFrame {
 				Connection conn = GenerateConnection.getConnection();
 				DAO dao = DAO.getInstance();
 
-				String title;
+				String title, author;
 				if (bookSearchDialog.check() == 0) {
 					return;
 				} else if (bookSearchDialog.check() == 1) { // 대여
 					int check = JOptionPane.showConfirmDialog(null, "이 책을 대여하시겠습니까?", "책 대여", JOptionPane.YES_NO_OPTION);
 					if (check != JOptionPane.YES_OPTION) return;
 
-					title = bookSearchDialog.getTitleField().getText().trim();
-					int b_idx = dao.getBookIdx_FromTitle(conn, title);
+					title = bookSearchDialog.getTitleField();
+					author = bookSearchDialog.getAuthorField();
+					
+					int b_idx = dao.getBookIdx_FromTitleAuthor(conn, title, author);
 
 					int checkReserve = dao.checkBookReservationMine(conn, getSession_idx(), b_idx);
 					if (checkReserve == 1) {
@@ -1055,8 +1140,10 @@ public class Home extends JFrame {
 					int check = JOptionPane.showConfirmDialog(null, "이 책을 예약하시겠습니까?", "책 예약", JOptionPane.YES_NO_OPTION);
 					if (check != JOptionPane.YES_OPTION) return;
 
-					title = bookSearchDialog.getTitleField().getText().trim();
-					int b_idx = dao.getBookIdx_FromTitle(conn, title);
+					title = bookSearchDialog.getTitleField();
+					author = bookSearchDialog.getAuthorField();
+					
+					int b_idx = dao.getBookIdx_FromTitleAuthor(conn, title, author);
 
 					int re = dao.bReserve(conn, getSession_idx(), b_idx);
 					if (re == 0) {

@@ -95,7 +95,7 @@ public class BookSearchDialog extends JDialog {
 				Connection conn = GenerateConnection.getConnection();
 				DAO dao = DAO.getInstance();
 				
-				String selectedTitle = searchField.getText().trim();
+				String selectedTitle = getSearchField();
 				
 				if(selectedTitle.length() == 0) {
 					JOptionPane.showMessageDialog(null, "책 제목을 입력해야합니다.", "책 검색", JOptionPane.WARNING_MESSAGE);
@@ -177,16 +177,16 @@ public class BookSearchDialog extends JDialog {
 		return this.value;
 	}
 
-	public JTextField getTitleField() {
-		return titleField;
+	public String getTitleField() {
+		return titleField.getText().trim();
 	}
 
 	public void setTitleField(JTextField titleField) {
 		this.titleField = titleField;
 	}
 
-	public JTextField getSearchField() {
-		return searchField;
+	public String getSearchField() {
+		return searchField.getText().trim();
 	}
 
 	public void setSearchField(String str) {
@@ -196,5 +196,14 @@ public class BookSearchDialog extends JDialog {
 	public JButton getSearchBtn() {
 		return searchBtn;
 	}
+
+	public String getAuthorField() {
+		return authorField.getText().trim();
+	}
+
+	public void setAuthorField(JTextField authorField) {
+		this.authorField = authorField;
+	}
+	
 	
 }
