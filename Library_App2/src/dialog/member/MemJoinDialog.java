@@ -135,7 +135,7 @@ public class MemJoinDialog extends JDialog {
 		
 		
 		
-		setSize(280, 425);
+		setSize(280, 430);
 		setLocationRelativeTo(null);
 		setResizable(false);
 		

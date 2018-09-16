@@ -84,7 +84,7 @@ public class LetterDialog extends JDialog {
 		JPanel btnPanel;
 		public ReceivePanel() {
 			
-			receiveScrollPane.setPreferredSize(new Dimension(460, 280));
+			receiveScrollPane.setPreferredSize(new Dimension(460, 275));
 			add(receiveScrollPane);
 			
 			receiveTable.addMouseListener(new ReadReceiveLetter());
@@ -101,7 +101,7 @@ public class LetterDialog extends JDialog {
 		JPanel btnPanel;
 		public SentPanel() {
 			
-			sentScrollPane.setPreferredSize(new Dimension(460, 280));
+			sentScrollPane.setPreferredSize(new Dimension(460, 275));
 			add(sentScrollPane);
 			
 			sentTable.addMouseListener(new ReadSentLetter());
@@ -196,26 +196,26 @@ public class LetterDialog extends JDialog {
 			receiverLabel.setBounds(10, 0, 100, 30);
 			add(receiverField = new JTextField());
 			receiverField.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-			receiverField.setBounds(100, 0, 295, 30);
+			receiverField.setBounds(100, 0, 290, 30);
 			add(findMemBtn = new JButton("검색"));
-			findMemBtn.setBounds(400, 0, 60, 30);
+			findMemBtn.setBounds(395, 0, 60, 30);
 			
 			add(titleLabel = new JLabel("제목"));
 //			titleLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 			titleLabel.setBounds(10, 40, 40, 30);
 			add(titleField = new JTextField());
 			titleField.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-			titleField.setBounds(100, 40, 360, 30);
+			titleField.setBounds(100, 40, 355, 30);
 			
 			add(contentsLabel = new JLabel("내용"));
 			contentsLabel.setBounds(10, 70, 40, 30);
 			contentsField = new JTextArea();
 			add(contentsPanel = new JScrollPane(contentsField));
 			contentsPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-			contentsPanel.setBounds(100, 70, 360, 170);
+			contentsPanel.setBounds(100, 70, 355, 170);
 
 			add(sendBtn = new JButton("전송"));
-			sendBtn.setBounds(400, 250, 60, 30);
+			sendBtn.setBounds(395, 250, 60, 30);
 			
 			generateEvent();
 		}

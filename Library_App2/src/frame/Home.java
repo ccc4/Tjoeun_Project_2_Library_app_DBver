@@ -74,7 +74,7 @@ public class Home extends JFrame {
 	JButton memLogoutBtn = new JButton("로그아웃");
 
 	// memMid 대여
-	String[] memRtListColumns = {" ", "책 제목", "대여 날짜" };
+	String[] memRtListColumns = {" ", "책 제목", "대여 정보" };
 	DefaultTableModel rtListModel = new DefaultTableModel(memRtListColumns, 0) {
 		public boolean isCellEditable(int row, int column) {
 			return false;
@@ -473,12 +473,53 @@ public class Home extends JFrame {
 			book[0] = String.valueOf(i+1);
 			book[1] = rentalBooks.get(i).getTitle();
 
-			SimpleDateFormat dateFormat = new SimpleDateFormat("yy-MM-dd");
-			book[2] = dateFormat.format(rentalBooks.get(i).getRentalDate());
-
+//			SimpleDateFormat dateFormat = new SimpleDateFormat("yy-MM-dd"); // 예전 코드
+//			book[2] = dateFormat.format(rentalBooks.get(i).getRentalDate());
+			
+			
+			Calendar cal = Calendar.getInstance();
+			
+			// 오늘 날짜
+			SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//			String today = sdf1.format(cal.getTime());
+//			Timestamp now = Timestamp.valueOf(today);
+//			System.out.println("today: " + now);
+			
+			// 대상 날짜
+			Timestamp original = rentalBooks.get(i).getRentalDate();
+//			cal.setTimeInMillis(original.getTime());
+//			System.out.println("original: " + original);
+			
+			
+			int checkDate = 0;
+			// 차 구하기
+			try {
+//				Date nowDate = sdf1.parse(today);
+				Date nowDate = sdf1.parse(sdf1.format(cal.getTime())); // String 으로 변환 후 Date 타입으로 변환
+				Date targetDate = sdf1.parse(sdf1.format(original));
+//				Date targetDate = sdf1.parse("2018-09-13 22:40:00"); // 테스트용
+				
+				int sub = (int) (nowDate.getTime() - targetDate.getTime());
+				checkDate = sub / (60 * 60 * 24 * 1000); // 날짜로 변환
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+			
+			if(checkDate < 3) {
+				cal.setTimeInMillis(rentalBooks.get(i).getRentalDate().getTime());
+				cal.add(Calendar.SECOND, 3 * (60 * 60 * 24));
+				Timestamp later = new Timestamp(cal.getTime().getTime());
+				SimpleDateFormat sdf2 = new SimpleDateFormat("MM/dd HH:mm");
+				
+				book[2] = sdf2.format(later) + " 까지";
+				
+			} else {
+				book[2] = (checkDate - 2) + " 일 연체중";
+				
+				// 관리자 메시지로 해당 회원한테 연체 알리기
+			}
 			rtListModel.addRow(book);
 		}
-
 		DB_Closer.close(conn);
 	}
 
@@ -490,7 +531,6 @@ public class Home extends JFrame {
 
 		reserveBooks = dao.getReservationList(conn, getSession_idx());
 
-		int reservationCancelNum = 0;
 		for (int i = 0; i < reserveBooks.size(); i++) {
 
 			String[] book = new String[3];
@@ -498,51 +538,10 @@ public class Home extends JFrame {
 			book[1] = reserveBooks.get(i).getTitle();
 
 //			book[1] = dateFormat.format(books.get(i).getReserveDate()); // 예전 코드
-
+			
 			Calendar cal = Calendar.getInstance();
 			
-			
-			// sql 에서 한큐에 해결.. 추후 다른 기능에 쓰이거나 따로 공부할 것
-			
-//			// 오늘 날짜
-//			SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-//			String today = sdf1.format(cal.getTime());
-//			Timestamp now = Timestamp.valueOf(today);
-//			System.out.println("today: " + now);
-//			
-//			// 대상 날짜
-//			Timestamp original = reserveBooks.get(i).getReserveDate();
-//			cal.setTimeInMillis(original.getTime());
-//			System.out.println("original: " + original);
-//			
-//			
-//			int checkDate = 0;
-//			// 차 구하기
-//			try {
-//				Date nowDate = sdf1.parse(today);
-//				Date targetDate = sdf1.parse(sdf1.format(original));
-////				Date targetDate = sdf1.parse("2018-09-13 17:24:00"); // 테스트용
-//				
-//				int sub = (int) (nowDate.getTime() - targetDate.getTime());
-////				System.out.println("sub: " + sub);
-//				checkDate = sub / (60 * 60 * 24 * 1000); // 날짜로 변환
-//				System.out.println("day: " + checkDate);
-//			} catch (ParseException e) {
-//				e.printStackTrace();
-//			}
-//			
-//			if(checkDate >= 1) {
-//				int b_idx = reserveBooks.get(i).getB_idx();
-//				int re = dao.bReservationCancel(conn, getSession_idx(), b_idx);
-//				if (re == 0) {
-//					JOptionPane.showMessageDialog(null, "자동 예약 취소 실패", "책 예약", JOptionPane.WARNING_MESSAGE);
-//				}
-//				reservationCancelNum++;
-//				continue;
-//			}
-			
-			
-			
+			cal.setTimeInMillis(reserveBooks.get(i).getReserveDate().getTime());
 			cal.add(Calendar.SECOND, (60 * 60 * 24));
 			Timestamp later = new Timestamp(cal.getTime().getTime());
 			SimpleDateFormat sdf2 = new SimpleDateFormat("MM/dd HH:mm");
@@ -551,10 +550,6 @@ public class Home extends JFrame {
 			rvListModel.addRow(book);
 		}
 		DB_Closer.close(conn);
-		
-		if(reservationCancelNum >= 1) {
-			JOptionPane.showMessageDialog(null, "예약 기간이 만료되어\n총 " + reservationCancelNum + " 권의 책이 예약 취소 처리되었습니다.", "책 예약", JOptionPane.INFORMATION_MESSAGE);
-		}
 	}
 
 	class MenubarClass extends JMenuBar {
@@ -586,7 +581,7 @@ public class Home extends JFrame {
 			this.add(menu_Member);
 		}
 	}
-
+	
 	private void generateEvent() {
 		this.memJoinBtn.addActionListener(new ActionListener() {
 

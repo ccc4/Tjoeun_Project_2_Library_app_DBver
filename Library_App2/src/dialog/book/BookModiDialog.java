@@ -84,7 +84,7 @@ public class BookModiDialog extends JDialog {
 		
 		getContentPane().setLayout(new BorderLayout());
 
-		setSize(340, 295);
+		setSize(340, 300);
 		setResizable(false);
 		setLocationRelativeTo(null);
 		

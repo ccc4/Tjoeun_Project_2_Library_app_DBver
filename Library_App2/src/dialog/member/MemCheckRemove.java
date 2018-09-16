@@ -32,7 +32,7 @@ public class MemCheckRemove extends JDialog {
 		add(removeBtn = new JButton("Ε»Επ"));
 		removeBtn.setBounds(160, 35, 60, 30);
 		
-		this.setSize(235, 100);
+		this.setSize(240, 105);
 //		setResizable(false);
 		this.setLocationRelativeTo(null);
 		

@@ -38,7 +38,7 @@ public class LoginDialog extends JDialog {
 		add(loginBtn = new JButton("·Î±×ÀÎ"));
 		loginBtn.setBounds(90, 65, 80, 30);
 		
-		this.setSize(190, 130);
+		this.setSize(190, 135);
 		this.setLocationRelativeTo(null);
 		this.setResizable(false);
 		

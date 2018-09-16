@@ -42,7 +42,7 @@ public class MemChangePw extends JDialog {
 		add(changeBtn = new JButton("º¯°æ"));
 		changeBtn.setBounds(160, 95, 60, 30);
 		
-		this.setSize(235, 160);
+		this.setSize(240, 165);
 //		setResizable(false);
 		this.setLocationRelativeTo(null);
 		

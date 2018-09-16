@@ -55,13 +55,12 @@ public class MemModiDialog extends JDialog {
 		
 		getContentPane().setLayout(null);
 		
-		add(idLabel = new JLabel("아이디", JLabel.CENTER));
-//		idLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
+		add(idLabel = new JLabel("아이디"));
 		idLabel.setBounds(10, 0, 80, 30);
 		add(idField = new JTextField());
 		idField.setBounds(95, 0, 100, 30);
 		
-		add(nicknameLabel = new JLabel("별명", JLabel.CENTER));
+		add(nicknameLabel = new JLabel("별명"));
 //		nicknameLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 		nicknameLabel.setBounds(10, 30, 80, 30);
 		add(nicknameField = new JTextField());
@@ -69,19 +68,19 @@ public class MemModiDialog extends JDialog {
 		add(checkNicknameBtn = new JButton("확인"));
 		checkNicknameBtn.setBounds(200, 30, 60, 30);
 		
-		add(nameLabel = new JLabel("이름", JLabel.CENTER));
+		add(nameLabel = new JLabel("이름"));
 //		nameLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 		nameLabel.setBounds(10, 60, 80, 30);
 		add(nameField = new JTextField());
 		nameField.setBounds(95, 60, 100, 30);
 		
-		add(ageLabel = new JLabel("나이", JLabel.CENTER));
+		add(ageLabel = new JLabel("나이"));
 //		ageLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 		ageLabel.setBounds(10, 90, 80, 30);
 		add(ageField = new JTextField());
 		ageField.setBounds(95, 90, 100, 30);
 		
-		add(genderLabel = new JLabel("성별", JLabel.CENTER));
+		add(genderLabel = new JLabel("성별"));
 //		genderLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 		genderLabel.setBounds(10, 120, 80, 30);
 		add(genderPanel = new JPanel());
@@ -89,15 +88,15 @@ public class MemModiDialog extends JDialog {
 		bg.add(femaleBtn);
 		genderPanel.add(maleBtn);
 		genderPanel.add(femaleBtn);
-		genderPanel.setBounds(95, 120, 110, 30);
+		genderPanel.setBounds(95, 120, 120, 30);
 		
-		add(telLabel = new JLabel("전화번호", JLabel.CENTER));
+		add(telLabel = new JLabel("전화번호"));
 //		telLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 		telLabel.setBounds(10, 150, 80, 30);
 		add(telField = new JTextField());
 		telField.setBounds(95, 150, 165, 30);
 		
-		add(emailLabel = new JLabel("이메일", JLabel.CENTER));
+		add(emailLabel = new JLabel("이메일"));
 //		emailLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 		emailLabel.setBounds(10, 180, 80, 30);
 		add(emailField_1 = new JTextField());
@@ -107,7 +106,7 @@ public class MemModiDialog extends JDialog {
 		add(emailField_2 = new JComboBox(domeins));
 		emailField_2.setBounds(95, 210, 165, 30);
 		
-		add(addressLabel = new JLabel("주소", JLabel.CENTER));
+		add(addressLabel = new JLabel("주소"));
 //		addressLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 		addressLabel.setBounds(10, 240, 80, 30);
 		add(addressPane);
@@ -120,7 +119,7 @@ public class MemModiDialog extends JDialog {
 		
 		idField.setEditable(false);
 		
-		setSize(280, 365);
+		setSize(280, 370);
 		setLocationRelativeTo(null);
 		setResizable(false);
 		

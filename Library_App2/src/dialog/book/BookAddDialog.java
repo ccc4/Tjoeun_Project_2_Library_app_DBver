@@ -73,7 +73,7 @@ public class BookAddDialog extends JDialog {
 		imagePanel.setOpaque(true);
 		imagePanel.setBackground(Color.LIGHT_GRAY);
 
-		setSize(340, 260);
+		setSize(340, 265);
 		setResizable(false);
 		setLocationRelativeTo(null);
 		
